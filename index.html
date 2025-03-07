@@ -35,30 +35,93 @@
   </style>
 
  </head>
-<body class="bg-pink-200">
-    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden" id="product-list">
-        <!-- Header -->
-        <div class="flex items-center justify-between p-4 relative">
-            <div class="relative">
-                <img alt="Profile Photo" class="w-10 h-10 rounded-full cursor-pointer" height="40" id="profile-icon" src="https://storage.googleapis.com/a1aa/image/Ek4MGYfmjJzLLbYE54HnszbczKdT7aAETfUzOLNdA3U.jpg" width="40"/>
-                <div class="absolute top-12 left-0 bg-white border rounded-md shadow-md p-4 hidden" id="profile-popup">
-                    <img alt="Profile Photo" class="w-16 h-16 rounded-full mx-auto" height="100" id="profile-photo" src="https://storage.googleapis.com/a1aa/image/Ek4MGYfmjJzLLbYE54HnszbczKdT7aAETfUzOLNdA3U.jpg" width="100"/>
-                    <p class="text-center mt-2" id="profile-name">John Doe</p>
-                </div>
-            </div>
-            <span class="text-xl font-bold absolute left-1/2 transform -translate-x-1/2">Trendy Tides</span>
-            <button class="px-4 py-2 bg-black text-white rounded-md" id="login-btn">Login</button>
-        </div>
-        <!-- Login Popup -->
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden" id="login-popup">
-            <div class="bg-white p-6 rounded-md shadow-md relative">
-                <button class="absolute top-2 right-2 text-xl">×</button>
-                <h2 class="text-xl font-semibold mb-4">Login</h2>
-                <input class="w-full p-2 border rounded-md mb-4" id="username" placeholder="Enter Username" type="text"/>
-                <input accept="image/*" class="w-full p-2 border rounded-md mb-4" id="profile-upload" type="file"/>
-                <button class="px-4 py-2 bg-black text-white rounded-md">Submit</button>
-            </div>
-        </div>
+ <body class="bg-gray-100">
+  <div class="flex items-center justify-between p-4 relative bg-white shadow-md">
+   <div class="relative">
+    <img alt="Empty Profile Icon" class="w-10 h-10 rounded-full cursor-pointer" height="40" id="profile-icon" onclick="toggleProfilePopup()" src="https://storage.googleapis.com/a1aa/image/JSs-9CtB5B8TeLHj_tEnlGp1I--Qzb9IwBZr5tw_R0w.jpg" width="40"/>
+    <div class="absolute top-12 left-0 bg-white border rounded-md shadow-md p-4 hidden" id="profile-popup">
+     <button class="absolute top-2 right-2 text-xl" onclick="toggleProfilePopup()">
+      ×
+     </button>
+     <img alt="Profile Photo" class="w-16 h-16 rounded-full mx-auto" height="100" id="profile-photo" src="" width="100"/>
+     <p class="text-center mt-2" id="profile-name">
+     </p>
+     <table class="w-full mt-4">
+      <tr>
+       <td class="font-semibold">
+        Username:
+       </td>
+       <td id="profile-username">
+       </td>
+      </tr>
+      <tr>
+       <td class="font-semibold">
+        Phone:
+       </td>
+       <td id="profile-phone">
+       </td>
+      </tr>
+      <tr>
+       <td class="font-semibold">
+        Address:
+       </td>
+       <td id="profile-address">
+       </td>
+      </tr>
+     </table>
+     <button class="px-4 py-2 bg-red-500 text-white rounded-md mt-4" onclick="logout()">
+      Logout
+     </button>
+    </div>
+   </div>
+   <span class="text-xl font-bold absolute left-1/2 transform -translate-x-1/2">
+    Trendy Tides
+   </span>
+   <button class="px-4 py-2 bg-black text-white rounded-md" id="login-btn" onclick="toggleLoginPopup()">
+    Login
+   </button>
+  </div>
+  <!-- Login Popup -->
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden" id="login-popup">
+   <div class="bg-blue-500 p-6 rounded-md shadow-md relative animate-slide-down">
+    <button class="absolute top-2 right-2 text-xl text-white" onclick="toggleLoginPopup()">
+     ×
+    </button>
+    <h2 class="text-xl font-semibold mb-4 text-white">
+     Login
+    </h2>
+    <div class="flex items-center mb-4">
+     <i class="fas fa-user text-white mr-2">
+     </i>
+     <input class="w-full p-2 border rounded-md" id="username" placeholder="Enter Username" type="text"/>
+    </div>
+    <div class="flex items-center mb-4 relative">
+     <i class="fas fa-lock text-white mr-2">
+     </i>
+     <input class="w-full p-2 border rounded-md" id="password" placeholder="Enter Password" type="password"/>
+     <i class="fas fa-eye text-white absolute right-3 cursor-pointer" id="password-icon" onclick="togglePasswordVisibility()">
+     </i>
+    </div>
+    <div class="flex items-center mb-4">
+     <i class="fas fa-phone text-white mr-2">
+     </i>
+     <input class="w-full p-2 border rounded-md" id="phone" placeholder="Enter Phone Number" type="tel"/>
+    </div>
+    <div class="flex items-center mb-4">
+     <i class="fas fa-map-marker-alt text-white mr-2">
+     </i>
+     <input class="w-full p-2 border rounded-md" id="address" placeholder="Enter Address" type="text"/>
+    </div>
+    <div class="flex items-center mb-4">
+     <i class="fas fa-upload text-white mr-2">
+     </i>
+     <input accept="image/*" class="w-full p-2 border rounded-md" id="profile-upload" type="file"/>
+    </div>
+    <button class="px-4 py-2 bg-black text-white rounded-md" onclick="login()">
+     Submit
+    </button>
+   </div>
+  </div>
         <!-- Search Bar -->
  <div class="p-4">
         <div class="relative">
@@ -272,58 +335,123 @@ function showCategory(category) {
  function toggleLoginPopup() {
             const popup = document.getElementById('login-popup');
             popup.classList.toggle('hidden');
+            if (!popup.classList.contains('hidden')) {
+                popup.classList.add('animate-slide-down');
+            } else {
+                popup.classList.remove('animate-slide-down');
+            }
+        }
+
+        function toggleProfilePopup() {
+            const popup = document.getElementById('profile-popup');
+            popup.classList.toggle('hidden');
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-4 right-4 p-4 rounded-md shadow-md flex items-center space-x-2 ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white`;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
         }
 
         function login() {
             const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
             const profileUpload = document.getElementById('profile-upload').files[0];
 
-            if (username && profileUpload) {
+            if (username && password && phone && address && profileUpload) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     const profilePhoto = e.target.result;
-                    localStorage.setItem('username', username);
-                    localStorage.setItem('profilePhoto', profilePhoto);
-                    localStorage.setItem('loginTime', new Date().getTime());
 
                     document.getElementById('profile-name').innerText = username;
                     document.getElementById('profile-photo').src = profilePhoto;
                     document.getElementById('profile-icon').src = profilePhoto;
 
+                    document.getElementById('profile-username').innerText = username;
+                    document.getElementById('profile-phone').innerText = phone;
+                    document.getElementById('profile-address').innerText = address;
+
                     document.getElementById('login-popup').classList.add('hidden');
                     document.getElementById('login-btn').classList.add('hidden');
+                    document.getElementById('profile-popup').classList.remove('hidden');
+
+                    // Save to local storage
+                    const loginData = {
+                        username,
+                        phone,
+                        address,
+                        profilePhoto,
+                        timestamp: new Date().getTime()
+                    };
+                    localStorage.setItem('loginData', JSON.stringify(loginData));
+
+                    showToast('Login successful!', 'success');
                 };
                 reader.readAsDataURL(profileUpload);
             } else {
-                alert('Please enter a username and upload a profile photo.');
+                showToast('All fields are required!', 'error');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('loginData');
+            document.getElementById('profile-name').innerText = '';
+            document.getElementById('profile-photo').src = '';
+            document.getElementById('profile-icon').src = 'https://storage.googleapis.com/a1aa/image/JSs-9CtB5B8TeLHj_tEnlGp1I--Qzb9IwBZr5tw_R0w.jpg';
+            document.getElementById('profile-username').innerText = '';
+            document.getElementById('profile-phone').innerText = '';
+            document.getElementById('profile-address').innerText = '';
+            document.getElementById('login-btn').classList.remove('hidden');
+            document.getElementById('profile-popup').classList.add('hidden');
+            showToast('Logged out successfully!', 'success');
+        }
+
+        function togglePasswordVisibility() {
+            const passwordField = document.getElementById('password');
+            const passwordIcon = document.getElementById('password-icon');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
             }
         }
 
         function checkLoginStatus() {
-            const username = localStorage.getItem('username');
-            const profilePhoto = localStorage.getItem('profilePhoto');
-            const loginTime = localStorage.getItem('loginTime');
-
-            if (username && profilePhoto && loginTime) {
+            const loginData = JSON.parse(localStorage.getItem('loginData'));
+            if (loginData) {
                 const currentTime = new Date().getTime();
-                const timeDiff = currentTime - loginTime;
-                const daysDiff = timeDiff / (1000 * 3600 * 24);
+                const sixtyDays = 60 * 24 * 60 * 60 * 1000; // 60 days in milliseconds
+                if (currentTime - loginData.timestamp < sixtyDays) {
+                    document.getElementById('profile-name').innerText = loginData.username;
+                    document.getElementById('profile-photo').src = loginData.profilePhoto;
+                    document.getElementById('profile-icon').src = loginData.profilePhoto;
 
-                if (daysDiff <= 15) {
-                    document.getElementById('profile-name').innerText = username;
-                    document.getElementById('profile-photo').src = profilePhoto;
-                    document.getElementById('profile-icon').src = profilePhoto;
+                    document.getElementById('profile-username').innerText = loginData.username;
+                    document.getElementById('profile-phone').innerText = loginData.phone;
+                    document.getElementById('profile-address').innerText = loginData.address;
+
                     document.getElementById('login-btn').classList.add('hidden');
+                    document.getElementById('profile-popup').classList.add('hidden');
                 } else {
-                    localStorage.removeItem('username');
-                    localStorage.removeItem('profilePhoto');
-                    localStorage.removeItem('loginTime');
+                    localStorage.removeItem('loginData');
                 }
             }
         }
 
         document.addEventListener('DOMContentLoaded', checkLoginStatus);
-
 
  
 
