@@ -1,0 +1,534 @@
+
+
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Shopping App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <style>
+   .category-button.active {
+            @apply bg-red-500 text-white;
+        }
+        .category-button:hover {
+            @apply text-red-500;
+        }
+        .category-button {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        .category-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #00ff00;
+            box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .category-button:hover::before {
+            opacity: 1;
+        }
+  </style>
+
+ </head>
+<body class="bg-pink-200">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md overflow-hidden" id="product-list">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-4 relative">
+            <div class="relative">
+                <img alt="Profile Photo" class="w-10 h-10 rounded-full cursor-pointer" height="40" id="profile-icon" src="https://storage.googleapis.com/a1aa/image/Ek4MGYfmjJzLLbYE54HnszbczKdT7aAETfUzOLNdA3U.jpg" width="40"/>
+                <div class="absolute top-12 left-0 bg-white border rounded-md shadow-md p-4 hidden" id="profile-popup">
+                    <img alt="Profile Photo" class="w-16 h-16 rounded-full mx-auto" height="100" id="profile-photo" src="https://storage.googleapis.com/a1aa/image/Ek4MGYfmjJzLLbYE54HnszbczKdT7aAETfUzOLNdA3U.jpg" width="100"/>
+                    <p class="text-center mt-2" id="profile-name">John Doe</p>
+                </div>
+            </div>
+            <span class="text-xl font-bold absolute left-1/2 transform -translate-x-1/2">Trendy Tides</span>
+            <button class="px-4 py-2 bg-black text-white rounded-md" id="login-btn">Login</button>
+        </div>
+        <!-- Login Popup -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden" id="login-popup">
+            <div class="bg-white p-6 rounded-md shadow-md relative">
+                <button class="absolute top-2 right-2 text-xl">×</button>
+                <h2 class="text-xl font-semibold mb-4">Login</h2>
+                <input class="w-full p-2 border rounded-md mb-4" id="username" placeholder="Enter Username" type="text"/>
+                <input accept="image/*" class="w-full p-2 border rounded-md mb-4" id="profile-upload" type="file"/>
+                <button class="px-4 py-2 bg-black text-white rounded-md">Submit</button>
+            </div>
+        </div>
+        <!-- Search Bar -->
+ <div class="p-4">
+        <div class="relative">
+            <i class="fas fa-microphone absolute left-3 top-3 text-green-500"></i>
+            <input class="w-full p-2 pl-10 border border-blue-500 rounded-full italic text-red-500 font-bold text-center" id="search-input" placeholder="Shop for jewelry" type="text" maxlength="15"/>
+            <i class="fas fa-search absolute right-3 top-3 text-green-500 font-bold"></i>
+            <div id="suggestions-box" class="absolute w-full bg-white border rounded-lg mt-1 z-10 max-h-40 overflow-y-auto text-xs"></div>
+        </div>
+    </div>
+
+        <!-- Categories -->
+        <div class="flex justify-around p-4 border-b">
+            <button class="px-4 py-2 category-button active" onclick="showCategory('all')">All</button>
+            <button class="px-4 py-2 category-button" onclick="showCategory('dress')">Dress</button>
+            <button class="px-4 py-2 category-button" onclick="showCategory('pants')">Pants</button>
+            <button class="px-4 py-2 category-button" onclick="showCategory('blazers')">Blazers</button>
+            <button class="px-4 py-2 category-button" onclick="showCategory('jackets')">Jackets</button>
+        </div>
+        <!-- Product List -->
+        <div class="p-4 grid grid-cols-2 gap-4" id="all">
+            <div class="space-y-2 cursor-pointer product-item dress">
+                <img alt="Sequin Backles dress on a mannequin" class="w-full h-48 object-cover rounded-lg" height="200" src="https://storage.googleapis.com/a1aa/image/JRt1-arjmOAWRnRnFoVOh7gUIJhCJ-SdFBeC4LtHbg8.jpg" width="150"/>
+                <div class="text-sm product-name">Sequin Backles</div>
+                <div class="text-sm text-gray-500 product-price">$100.99 <span class="text-red-500">10% Off</span></div>
+                <div class="flex space-x-2">
+                    <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+                    <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                </div>
+            </div>
+            <div class="space-y-2 cursor-pointer product-item dress">
+                <img alt="Casual Beach dress on a hanger" class="w-full h-48 object-cover rounded-lg" height="200" src="https://storage.googleapis.com/a1aa/image/xpdQXvr7JdhquEtGowr-sALc8mIP9GcJKXnIj0V3AKI.jpg" width="150"/>
+                <div class="text-sm product-name">Casual Beach</div>
+                <div class="text-sm text-gray-500 product-price">$120.99</div>
+                <div class="flex space-x-2">
+                    <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+                    <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                </div>
+            </div>
+            <div class="space-y-2 cursor-pointer product-item dress">
+                <img alt="Boho Strappy dress on a hanger" class="w-full h-48 object-cover rounded-lg" height="200" src="https://storage.googleapis.com/a1aa/image/qGXvATDdkpu0588vloa429WDCLVGFXFLOUsCJLndW6s.jpg" width="150"/>
+                <div class="text-sm product-name">Boho Strappy</div>
+                <div class="text-sm text-gray-500 product-price">$110.99 <span class="text-red-500">30% Off</span></div>
+                <div class="flex space-x-2">
+                    <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+                    <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                </div>
+            </div>
+            <div class="space-y-2 cursor-pointer product-item dress">
+                <img alt="Beach Dress on a hanger" class="w-full h-48 object-cover rounded-lg" height="200" src="https://storage.googleapis.com/a1aa/image/8-cV9q2grVC4VYyLCW8xJBl1qtft5tHto_abEeDFT1I.jpg" width="150"/>
+                <div class="text-sm product-name">Beach Dress</div>
+                <div class="text-sm text-gray-500 product-price">$156.99</div>
+                <div class="flex space-x-2">
+                    <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+                    <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                </div>
+            </div>
+            <div class="space-y-2 cursor-pointer product-item pants">
+                <img alt="Denim Jeans on a hanger" class="w-full h-48 object-cover rounded-lg" height="200" src="https://storage.googleapis.com/a1aa/image/YDD6-xNMMb2nd2Io8ujXxz3dihrgUNLcoZEFcGgHd2s.jpg" width="150"/>
+                <div class="text-sm product-name">Denim Jeans</div>
+                <div class="text-sm text-gray-500 product-price">$80.99</div>
+                <div class="flex space-x-2">
+                    <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+                    <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                </div>
+            </div>
+            <div class="space-y-2 cursor-pointer product-item pants">
+                <img alt="Chino Pants on a hanger" class="w-full h-48 object-cover rounded-lg" height="200" src="https://storage.googleapis.com/a1aa/image/2gckCnAxUnOl3O7pnnwFfvfPiIfD_YzmII33wL6AXcI.jpg" width="150"/>
+                <div class="text-sm product-name">Chino Pants</div>
+                <div class="text-sm text-gray-500 product-price">$70.99</div>
+                <div class="flex space-x-2">
+                    <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+                    <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                </div>
+            </div>
+            <div class="space-y-2 cursor-pointer product-item blazers">
+                <img alt="Formal Blazer on a mannequin" class="w-full h-48 object-cover rounded-lg" height="200" src="https://storage.googleapis.com/a1aa/image/BBsdRy8aiYcEfXGOvcGrCU8F5rcVQD7NDuOSntKSKlw.jpg" width="150"/>
+                <div class="text-sm product-name">Formal Blazer</div>
+                <div class="text-sm text-gray-500 product-price">$150.99</div>
+                <div class="flex space-x-2">
+                    <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+                    <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                </div>
+            </div>
+            <div class="space-y-2 cursor-pointer product-item blazers">
+                <img alt="Casual Blazer on a mannequin" class="w-full h-48 object-cover rounded-lg" height="200" src="https://storage.googleapis.com/a1aa/image/0tBcX1VtKJZA26-wS-IdGfb4psuA_D2VfHtldEcRwGE.jpg" width="150"/>
+                <div class="text-sm product-name">Casual Blazer</div>
+                <div class="text-sm text-gray-500 product-price">$130.99</div>
+                <div class="flex space-x-2">
+                    <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+                    <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                </div>
+            </div>
+            <div class="space-y-2 cursor-pointer product-item jackets">
+                <img alt="Leather Jacket on a mannequin" class="w-full h-48 object-cover rounded-lg" height="200" src="https://storage.googleapis.com/a1aa/image/n_4Tanf3ID1VYqqxr7-8_TyZhe0i3PHi6md1F8iSN5c.jpg" width="150"/>
+                <div class="text-sm product-name">Leather Jacket</div>
+                <div class="text-sm text-gray-500 product-price">$200.99</div>
+                <div class="flex space-x-2">
+                    <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+                    <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                </div>
+            </div>
+            <div class="space-y-2 cursor-pointer product-item jackets">
+                <img alt="Denim Jacket on a mannequin" class="w-full h-48 object-cover rounded-lg" height="200" src="https://storage.googleapis.com/a1aa/image/T8U-W5i2ag8espW2tJOz3t-O9O0nO1uLUCk0PO5kL9Y.jpg" width="150"/>
+                <div class="text-sm product-name">Denim Jacket</div>
+                <div class="text-sm text-gray-500 product-price">$180.99</div>
+                <div class="flex space-x-2">
+                    <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+                    <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md mt-8 hidden" id="product-detail">
+        <!-- Product Detail -->
+        <div class="relative">
+            <img alt="Product Image" class="w-full h-80 object-cover rounded-t-lg" height="320" id="product-image" src="https://storage.googleapis.com/a1aa/image/6WNZyIZYEoJCUyPOXwIjOWOabVClBFBjL4cl2m5nR_0.jpg" width="300"/>
+            <div class="absolute top-4 left-4">
+                <i class="fas fa-arrow-left text-xl text-white"></i>
+            </div>
+            <div class="absolute top-4 right-4 flex space-x-4">
+                <i class="fas fa-heart text-xl text-white"></i>
+                <i class="fas fa-shopping-bag text-xl text-white"></i>
+            </div>
+        </div>
+        <div class="p-4">
+            <h2 class="text-2xl font-bold mb-2" id="product-title">Product Title</h2>
+            <p class="text-gray-700 mb-4" id="product-description">Product description goes here. It provides details about the product.</p>
+            <div class="text-xl font-semibold mb-4" id="product-price">$0.00</div>
+            <div class="flex space-x-2">
+                <button class="flex-1 px-4 py-2 border rounded-lg">Add to Bag</button>
+                <button class="flex-1 px-4 py-2 bg-black text-white rounded-lg">Buy Now</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+    <!-- Cart Icon -->
+    <div class="fixed bottom-4 left-4 bg-red-500 text-white rounded-full w-16 h-16 flex items-center justify-center cursor-pointer" id="cart-icon">
+        <i class="fas fa-shopping-cart text-2xl"></i>
+    </div>
+
+    <!-- Cart Popup -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center hidden" id="cart-popup">
+        <div class="bg-white p-6 rounded-t-md shadow-md relative w-full max-w-md">
+            <button class="absolute top-2 right-2 text-2xl text-red-500" onclick="toggleCartPopup()">×</button>
+            <h2 class="text-xl font-semibold mb-4 text-center text-red-500 font-bold">Trendy Tides</h2>
+            <div id="cart-items" class="space-y-4 max-h-60 overflow-y-auto">
+                <div class="flex items-center space-x-4">
+                    <img src="https://storage.googleapis.com/a1aa/image/JRt1-arjmOAWRnRnFoVOh7gUIJhCJ-SdFBeC4LtHbg8.jpg" alt="Sequin Backles dress on a mannequin" class="w-16 h-16 object-cover rounded-lg">
+                    <div class="flex-1">
+                        <div class="text-sm font-semibold">Sequin Backles</div>
+                        <div class="text-sm text-gray-500">$100.99 10% Off</div>
+                    </div>
+                    <button class="px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                    <button class="text-red-500 text-2xl remove-item" data-index="0">×</button>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <img src="https://storage.googleapis.com/a1aa/image/xpdQXvr7JdhquEtGowr-sALc8mIP9GcJKXnIj0V3AKI.jpg" alt="Casual Beach dress on a hanger" class="w-16 h-16 object-cover rounded-lg">
+                    <div class="flex-1">
+                        <div class="text-sm font-semibold">Casual Beach</div>
+                        <div class="text-sm text-gray-500">$120.99</div>
+                    </div>
+                    <button class="px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                    <button class="text-red-500 text-2xl remove-item" data-index="1">×</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Message -->
+    <div id="toast" class="fixed top-4 left-4 bg-blue-500 text-white px-4 py-2 rounded-md shadow-md flex items-center space-x-2 hidden">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-message"></span>
+    </div>
+
+
+  <script>
+function showCategory(category) {
+    const categories = ['all', 'dress', 'pants', 'blazers', 'jackets'];
+    const items = document.querySelectorAll('.product-item');
+
+    items.forEach(item => {
+        item.classList.toggle('hidden', category !== 'all' && !item.classList.contains(category));
+    });
+
+    categories.forEach(cat => {
+        const button = document.querySelector(`button[data-category="${cat}"]`);
+        if (button) {
+            button.classList.toggle('active', cat === category);
+        }
+    });
+}
+
+
+
+
+
+
+
+
+
+
+
+ function toggleLoginPopup() {
+            const popup = document.getElementById('login-popup');
+            popup.classList.toggle('hidden');
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const profileUpload = document.getElementById('profile-upload').files[0];
+
+            if (username && profileUpload) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const profilePhoto = e.target.result;
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('profilePhoto', profilePhoto);
+                    localStorage.setItem('loginTime', new Date().getTime());
+
+                    document.getElementById('profile-name').innerText = username;
+                    document.getElementById('profile-photo').src = profilePhoto;
+                    document.getElementById('profile-icon').src = profilePhoto;
+
+                    document.getElementById('login-popup').classList.add('hidden');
+                    document.getElementById('login-btn').classList.add('hidden');
+                };
+                reader.readAsDataURL(profileUpload);
+            } else {
+                alert('Please enter a username and upload a profile photo.');
+            }
+        }
+
+        function checkLoginStatus() {
+            const username = localStorage.getItem('username');
+            const profilePhoto = localStorage.getItem('profilePhoto');
+            const loginTime = localStorage.getItem('loginTime');
+
+            if (username && profilePhoto && loginTime) {
+                const currentTime = new Date().getTime();
+                const timeDiff = currentTime - loginTime;
+                const daysDiff = timeDiff / (1000 * 3600 * 24);
+
+                if (daysDiff <= 15) {
+                    document.getElementById('profile-name').innerText = username;
+                    document.getElementById('profile-photo').src = profilePhoto;
+                    document.getElementById('profile-icon').src = profilePhoto;
+                    document.getElementById('login-btn').classList.add('hidden');
+                } else {
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('profilePhoto');
+                    localStorage.removeItem('loginTime');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', checkLoginStatus);
+
+
+ 
+
+
+
+
+ document.addEventListener('DOMContentLoaded', function() {
+            const cartIcon = document.getElementById('cart-icon');
+            const cartPopup = document.getElementById('cart-popup');
+            const cartItemsContainer = document.getElementById('cart-items');
+            const addToCartButtons = document.querySelectorAll('.add-to-cart');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+
+            // Load cart items from local storage
+            const cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+
+            // Function to save cart items to local storage
+            function saveCartItems() {
+                localStorage.setItem('cartItems', JSON.stringify(cartItems));
+            }
+
+            // Function to render cart items
+            function renderCartItems() {
+                cartItemsContainer.innerHTML = '';
+                cartItems.forEach((item, index) => {
+                    const cartItem = document.createElement('div');
+                    cartItem.classList.add('flex', 'items-center', 'space-x-4');
+                    cartItem.innerHTML = `
+                        <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded-lg">
+                        <div class="flex-1">
+                            <div class="text-sm font-semibold">${item.name}</div>
+                            <div class="text-sm text-gray-500">${item.price}</div>
+                        </div>
+                        <button class="px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
+                        <button class="text-red-500 text-2xl remove-item" data-index="${index}">×</button>
+                    `;
+                    cartItemsContainer.appendChild(cartItem);
+                });
+
+                // Add event listeners to remove buttons
+                document.querySelectorAll('.remove-item').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = this.getAttribute('data-index');
+                        cartItems.splice(index, 1);
+                        saveCartItems();
+                        renderCartItems();
+                        showToast('Removed from cart');
+                    });
+                });
+            }
+
+            // Function to show toast message
+            function showToast(message) {
+                toastMessage.textContent = message;
+                toast.classList.remove('hidden');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 3000);
+            }
+
+            // Add event listeners to "Add to Bag" buttons
+            addToCartButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (cartItems.length >= 10) {
+                        showToast('Cart is full');
+                        return;
+                    }
+
+                    const product = button.closest('.space-y-2');
+                    const image = product.querySelector('img').src;
+                    const name = product.querySelector('.text-sm').textContent;
+                    const price = product.querySelector('.text-gray-500').textContent;
+
+                    const cartItem = { image, name, price };
+                    cartItems.push(cartItem);
+                    saveCartItems();
+                    renderCartItems();
+                    showToast('Added to cart');
+                });
+            });
+
+            // Show cart popup
+            cartIcon.addEventListener('click', function() {
+                if (cartItems.length === 0) {
+                    showToast('Add an item first');
+                    return;
+                }
+                cartPopup.classList.remove('hidden');
+                renderCartItems();
+            });
+
+            // Hide cart popup
+            cartPopup.addEventListener('click', function(event) {
+                if (event.target === cartPopup || event.target.closest('button')) {
+                    cartPopup.classList.add('hidden');
+                }
+            });
+
+            // Set local storage expiration
+            const expirationDays = 15;
+            const now = new Date();
+            const expirationDate = new Date(localStorage.getItem('cartExpirationDate'));
+
+            if (!expirationDate || now > expirationDate) {
+                localStorage.removeItem('cartItems');
+                localStorage.setItem('cartExpirationDate', new Date(now.getTime() + expirationDays * 24 * 60 * 60 * 1000));
+            }
+        });
+
+
+
+
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-input');
+            const suggestionsBox = document.getElementById('suggestions-box');
+            const searchTerms = [
+                'Shop for clothes', 
+                'Shop for sari', 
+                'Shop for lehanga',
+                'Shop for shoes',
+                'Shop for accessories',
+                'Shop for bags',
+                'Shop for jewelry',
+                'Shop for watches',
+                'Shop for sunglasses',
+                'Shop for hats',
+                'Shop for belts',
+                'Shop for scarves',
+                'Shop for gloves'
+            ];
+            let termIndex = 0;
+
+            function cycleSearchTerms() {
+                searchInput.placeholder = searchTerms[termIndex];
+                termIndex = (termIndex + 1) % searchTerms.length;
+                setTimeout(() => {
+                    searchInput.placeholder = '';
+                    setTimeout(cycleSearchTerms, termIndex === 1 ? 2000 : 3000);
+                }, 2000);
+            }
+
+            function searchItems() {
+                const query = document.getElementById('search-input').value.toLowerCase().trim();
+                const items = document.querySelectorAll('.product-item');
+                let found = false;
+
+                items.forEach(item => {
+                    const itemName = item.querySelector('.text-sm')?.innerText.toLowerCase() || '';
+                    const match = itemName.includes(query) || itemName.includes(query.slice(0, -1)) || itemName.includes(query + 's');
+                    item.classList.toggle('hidden', !match);
+                    if (match) found = true;
+                });
+
+                if (!found && query) {
+                    showToast('Not Found');
+                } else {
+                    suggestionsBox.innerHTML = '';
+                }
+
+                // Show suggestions
+                const filteredTerms = searchTerms.filter(term => term.toLowerCase().includes(query));
+                if (query && filteredTerms.length > 0 && !found) {
+                    filteredTerms.forEach(term => {
+                        const suggestionItem = document.createElement('div');
+                        suggestionItem.className = 'p-2 cursor-pointer hover:bg-gray-200 text-sm';
+                        suggestionItem.textContent = term;
+                        suggestionItem.onclick = () => {
+                            searchInput.value = term;
+                            suggestionsBox.innerHTML = '';
+                            searchItems();
+                        };
+                        suggestionsBox.appendChild(suggestionItem);
+                    });
+                }
+            }
+
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white p-2 rounded';
+                toast.innerText = message;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+
+            searchInput.addEventListener('input', searchItems);
+            searchInput.addEventListener('input', function() {
+                if (searchInput.value.length > 15) {
+                    searchInput.value = searchInput.value.slice(0, 15);
+                }
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.relative')) {
+                    suggestionsBox.innerHTML = '';
+                }
+            });
+
+            cycleSearchTerms();
+        });
+  </script>
+ </body>
+</html>
