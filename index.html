@@ -6,6 +6,7 @@
   <title>Shopping App</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
   <style>
    .category-button.active {
             @apply bg-red-500 text-white;
@@ -35,126 +36,87 @@
   </style>
 
  </head>
- <body class="bg-gray-100 overflow-x-hidden">
-  <div class="flex items-center justify-between p-4 relative bg-white shadow-md">
-   <div class="relative">
-    <img alt="Empty Profile Icon" class="w-10 h-10 rounded-full cursor-pointer" height="40" id="profile-icon" onclick="toggleProfilePopup()" src="https://storage.googleapis.com/a1aa/image/dW_whs8jHB6LZufF8bDlqLCkXeHz4aR-gsBhtYbTVJ8.jpg" width="40"/>
-    <div class="absolute top-12 left-0 bg-white border rounded-md shadow-md p-4 hidden" id="profile-popup">
-     <button class="absolute top-2 right-2 text-xl" onclick="toggleProfilePopup()">
-      ×
-     </button>
-     <img alt="Empty Profile Photo" class="w-16 h-16 rounded-full mx-auto" height="100" id="profile-photo" src="https://storage.googleapis.com/a1aa/image/yuct0nsnFVKxBl2X7Hx6NpfFZJwsKFYVncCKhfGPakQ.jpg" width="100"/>
-     <p class="text-center mt-2" id="profile-name">
-     </p>
-     <table class="w-full mt-4">
-      <tr>
-       <td class="font-semibold">
-        Username:
-       </td>
-       <td id="profile-username">
-       </td>
-      </tr>
-      <tr>
-       <td class="font-semibold">
-        Phone:
-       </td>
-       <td id="profile-phone">
-       </td>
-      </tr>
-      <tr>
-       <td class="font-semibold">
-        Address:
-       </td>
-       <td id="profile-address">
-       </td>
-      </tr>
-     </table>
-     <button class="px-4 py-2 bg-red-500 text-white rounded-md mt-4" onclick="logout()">
-      Logout
-     </button>
+<body class="bg-gray-100 overflow-x-hidden">
+    <div class="flex items-center justify-between p-4 relative bg-white shadow-md">
+        <div class="relative">
+            <img alt="Empty Profile Icon" class="w-10 h-10 rounded-full cursor-pointer" height="40" id="profile-icon" onclick="toggleProfilePopup()" src="https://storage.googleapis.com/a1aa/image/dW_whs8jHB6LZufF8bDlqLCkXeHz4aR-gsBhtYbTVJ8.jpg" width="40"/>
+            <div class="absolute top-12 left-0 bg-white border rounded-md shadow-md p-4 hidden" id="profile-popup">
+                <button class="absolute top-2 right-2 text-xl" onclick="toggleProfilePopup()">×</button>
+                <img alt="Empty Profile Photo" class="w-16 h-16 rounded-full mx-auto" height="100" id="profile-photo" src="" width="100">
+                <p class="text-center mt-2" id="profile-name">Abhishek</p>
+                <table class="w-full mt-4 text-xs">
+                    <tbody>
+                        <tr>
+                            <td class="font-semibold">Username:</td>
+                            <td id="profile-username">Abhishek</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Phone:</td>
+                            <td id="profile-phone">9065856693</td>
+                        </tr>
+                        <tr>
+                            <td class="font-semibold">Address:</td>
+                            <td id="profile-address">pdp</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="px-4 py-2 bg-red-500 text-white rounded-md mt-4" onclick="logout()">Logout</button>
+            </div>
+        </div>
+        <span class="text-xl font-bold absolute left-1/2 transform -translate-x-1/2">Trendy Tides</span>
+        <button class="px-4 py-2 bg-black text-white rounded-md" id="login-btn" onclick="toggleLoginPopup()">Login</button>
     </div>
-   </div>
-   <span class="text-xl font-bold absolute left-1/2 transform -translate-x-1/2">
-    Trendy Tides
-   </span>
-   <button class="px-4 py-2 bg-black text-white rounded-md" id="login-btn" onclick="toggleLoginPopup()">
-    Login
-   </button>
-  </div>
-  <!-- Login Popup -->
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center hidden" id="login-popup">
-   <div class="bg-blue-500 p-3 rounded-t-md shadow-md relative animate-slide-up">
-    <h2 class="text-2xl font-bold text-center text-red-500 mb-4">
-     Trendy Tides
-    </h2>
-    <button class="absolute top-2 right-2 text-xl text-white" onclick="toggleLoginPopup()">
-     ×
-    </button>
-    <h2 class="text-xl font-semibold mb-4 text-white">
-     Login
-    </h2>
-    <div class="flex items-center mb-4">
-     <i class="fas fa-user text-white mr-2">
-     </i>
-     <input class="w-full p-2 border rounded-md" id="username" placeholder="Enter Username" type="text"/>
+    
+    <!-- Search Bar -->
+    <div class="p-4" id="search-bar">
+        <div class="relative">
+            <i class="fas fa-microphone absolute left-3 top-3 text-green-500"></i>
+            <input class="w-full p-2 pl-10 border border-blue-500 rounded-full italic text-red-500 font-bold text-center" id="search-input" maxlength="15" placeholder="Shop for jewelry" type="text"/>
+            <i class="fas fa-search absolute right-3 top-3 text-green-500 font-bold"></i>
+            <div class="absolute w-full bg-white border rounded-lg mt-1 z-10 max-h-40 overflow-y-auto text-xs" id="suggestions-box"></div>
+        </div>
     </div>
-    <div class="flex items-center mb-4 relative">
-     <i class="fas fa-lock text-white mr-2">
-     </i>
-     <input class="w-full p-2 border rounded-md" id="password" placeholder="Enter Password" type="password"/>
-     <i class="fas fa-eye text-white absolute right-3 cursor-pointer" id="password-icon" onclick="togglePasswordVisibility()">
-     </i>
+    
+    <!-- Categories -->
+    <div class="flex justify-around p-4 border-b">
+        <button class="px-4 py-2 category-button active" onclick="showCategory('all')">All</button>
+        <button class="px-4 py-2 category-button" onclick="showCategory('dress')">Dress</button>
+        <button class="px-4 py-2 category-button" onclick="showCategory('pants')">Pants</button>
+        <button class="px-4 py-2 category-button" onclick="showCategory('blazers')">Blazers</button>
+        <button class="px-4 py-2 category-button" onclick="showCategory('jackets')">Jackets</button>
     </div>
-    <div class="flex items-center mb-4">
-     <i class="fas fa-phone text-white mr-2">
-     </i>
-     <input class="w-full p-2 border rounded-md" id="phone" placeholder="Enter Phone Number" type="tel"/>
+    
+    <!-- Login Popup -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" id="login-popup">
+        <div class="bg-blue-500 p-3 rounded-t-md shadow-md relative animate-slide-up w-full max-w-xs mx-4 sm:mx-0">
+            <h2 class="text-2xl font-bold text-center text-red-500 mb-4">Trendy Tides</h2>
+            <button class="absolute top-2 right-2 text-xl text-white" onclick="toggleLoginPopup()">×</button>
+            <h2 class="text-xl font-semibold mb-4 text-white">Login</h2>
+            <div class="flex items-center mb-4">
+                <i class="fas fa-user text-white mr-2"></i>
+                <input class="w-full p-2 border rounded-md" id="username" placeholder="Enter Username" type="text"/>
+            </div>
+            <div class="flex items-center mb-4 relative">
+                <i class="fas fa-lock text-white mr-2"></i>
+                <input class="w-full p-2 border rounded-md" id="password" placeholder="Enter Password" type="password"/>
+                <i class="fas fa-eye text-white absolute right-3 cursor-pointer" id="password-icon" onclick="togglePasswordVisibility()"></i>
+            </div>
+            <div class="flex items-center mb-4">
+                <i class="fas fa-phone text-white mr-2"></i>
+                <input class="w-full p-2 border rounded-md" id="phone" placeholder="Enter Phone Number" type="tel"/>
+            </div>
+            <div class="flex items-center mb-4">
+                <i class="fas fa-map-marker-alt text-white mr-2"></i>
+                <input class="w-full p-2 border rounded-md" id="address" placeholder="Enter Address" type="text"/>
+            </div>
+            <div class="flex items-center mb-4">
+                <i class="fas fa-upload text-white mr-2"></i>
+                <input accept="image/*" class="w-full p-2 border rounded-md" id="profile-upload" type="file"/>
+            </div>
+            <button class="px-4 py-2 bg-black text-white rounded-md" onclick="login()">Submit</button>
+        </div>
     </div>
-    <div class="flex items-center mb-4">
-     <i class="fas fa-map-marker-alt text-white mr-2">
-     </i>
-     <input class="w-full p-2 border rounded-md" id="address" placeholder="Enter Address" type="text"/>
-    </div>
-    <div class="flex items-center mb-4">
-     <i class="fas fa-upload text-white mr-2">
-     </i>
-     <input accept="image/*" class="w-full p-2 border rounded-md" id="profile-upload" type="file"/>
-    </div>
-    <button class="px-4 py-2 bg-black text-white rounded-md" onclick="login()">
-     Submit
-    </button>
-   </div>
-  </div>
-  <!-- Search Bar -->
-  <div class="p-4" id="search-bar">
-   <div class="relative">
-    <i class="fas fa-microphone absolute left-3 top-3 text-green-500">
-    </i>
-    <input class="w-full p-2 pl-10 border border-blue-500 rounded-full italic text-red-500 font-bold text-center" id="search-input" maxlength="15" placeholder="Shop for jewelry" type="text"/>
-    <i class="fas fa-search absolute right-3 top-3 text-green-500 font-bold">
-    </i>
-    <div class="absolute w-full bg-white border rounded-lg mt-1 z-10 max-h-40 overflow-y-auto text-xs" id="suggestions-box">
-    </div>
-   </div>
-  </div>
-  <!-- Categories -->
-  <div class="flex justify-around p-4 border-b">
-   <button class="px-4 py-2 category-button active" onclick="showCategory('all')">
-    All
-   </button>
-   <button class="px-4 py-2 category-button" onclick="showCategory('dress')">
-    Dress
-   </button>
-   <button class="px-4 py-2 category-button" onclick="showCategory('pants')">
-    Pants
-   </button>
-   <button class="px-4 py-2 category-button" onclick="showCategory('blazers')">
-    Blazers
-   </button>
-   <button class="px-4 py-2 category-button" onclick="showCategory('jackets')">
-    Jackets
-   </button>
-  </div>
+    
         <!-- Product List -->
         <div class="p-4 grid grid-cols-2 gap-4" id="all">
             <div class="space-y-2 cursor-pointer product-item dress">
@@ -350,33 +312,31 @@ function showCategory(category) {
   function toggleProfilePopup() {
             const profilePopup = document.getElementById('profile-popup');
             const searchBar = document.getElementById('search-bar');
+            const categories = document.querySelector('.flex.justify-around.p-4.border-b');
             profilePopup.classList.toggle('hidden');
             searchBar.classList.toggle('hidden');
+            categories.classList.toggle('hidden');
+            if (!profilePopup.classList.contains('hidden')) {
+                setTimeout(() => {
+                    profilePopup.classList.add('hidden');
+                    searchBar.classList.remove('hidden');
+                    categories.classList.remove('hidden');
+                }, 3000);
+            }
         }
 
         function toggleLoginPopup() {
             const loginPopup = document.getElementById('login-popup');
             const searchBar = document.getElementById('search-bar');
-            const searchInput = document.getElementById('search-input');
+            const categories = document.querySelector('.flex.justify-around.p-4.border-b');
             loginPopup.classList.toggle('hidden');
             searchBar.classList.toggle('hidden');
-            searchInput.disabled = !searchInput.disabled;
+            categories.classList.toggle('hidden');
         }
-
-        // Hide profile popup when clicking outside
-        document.addEventListener('click', function(event) {
-            const profilePopup = document.getElementById('profile-popup');
-            const profileIcon = document.getElementById('profile-icon');
-            if (!profilePopup.contains(event.target) && !profileIcon.contains(event.target)) {
-                profilePopup.classList.add('hidden');
-                document.getElementById('search-bar').classList.remove('hidden');
-                document.getElementById('login-btn').classList.remove('hidden');
-            }
-        });
 
         function showToast(message, type) {
             const toast = document.createElement('div');
-            toast.className = `fixed top-4 right-4 p-4 rounded-md shadow-md flex items-center space-x-2 ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white`;
+            toast.className = `fixed bottom-4 right-4 p-4 rounded-md shadow-md flex items-center space-x-2 ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'} text-white`;
             toast.innerHTML = `
                 <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-info-circle'}"></i>
                 <span>${message}</span>
@@ -409,9 +369,7 @@ function showCategory(category) {
 
                     document.getElementById('login-popup').classList.add('hidden');
                     document.getElementById('login-btn').classList.add('hidden');
-                    document.getElementById('profile-popup').classList.remove('hidden');
 
-                    // Save to local storage
                     const loginData = {
                         username,
                         phone,
@@ -460,7 +418,7 @@ function showCategory(category) {
             const loginData = JSON.parse(localStorage.getItem('loginData'));
             if (loginData) {
                 const currentTime = new Date().getTime();
-                const sixtyDays = 60 * 24 * 60 * 60 * 1000; // 60 days in milliseconds
+                const sixtyDays = 60 * 24 * 60 * 60 * 1000;
                 if (currentTime - loginData.timestamp < sixtyDays) {
                     document.getElementById('profile-name').innerText = loginData.username;
                     document.getElementById('profile-photo').src = loginData.profilePhoto;
@@ -479,8 +437,7 @@ function showCategory(category) {
         }
 
         document.addEventListener('DOMContentLoaded', checkLoginStatus);
- 
-
+  
 
 
 
