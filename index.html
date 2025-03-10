@@ -56,9 +56,9 @@
         <span class="text-xl font-bold absolute left-1/2 transform -translate-x-1/2">Trendy Tides</span>
         <button class="px-4 py-2 bg-black text-white rounded-md" id="login-btn" onclick="toggleLoginPopup()">Login</button>
     </div>
-    
-    <!-- Search Bar -->
-  <div class="p-4" id="search-bar">
+
+   <!-- Search Bar -->
+    <div class="p-4" id="search-bar">
         <div class="relative">
             <i id="voice-microphone-icon" class="fas fa-microphone absolute left-3 top-3 text-green-500 cursor-pointer"></i>
             <div class="absolute left-8 top-3 h-6 border-r border-gray-300"></div>
@@ -76,6 +76,7 @@
         </div>
     </div>
 
+  
     <!-- Categories -->
    <div class="flex justify-around p-4 border-b bg-white">
         <button class="px-4 py-2 bg-red-500 text-white" onclick="showCategory('all')">All</button>
@@ -946,7 +947,7 @@ function showCategory(category) {
 
 
 
-  document.addEventListener('DOMContentLoaded', function() {
+         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.getElementById('search-input');
             const suggestionsBox = document.getElementById('suggestions-box');
             const searchTerms = [
@@ -1099,6 +1100,7 @@ function showCategory(category) {
 
             startButton.addEventListener('click', startRecording);
         });
+
   </script>
  </body>
 </html>
