@@ -58,12 +58,23 @@
     </div>
     
     <!-- Search Bar -->
+  <!-- Search Bar -->
     <div class="p-4" id="search-bar">
         <div class="relative">
-            <i class="fas fa-microphone absolute left-3 top-3 text-green-500"></i>
-            <input class="w-full p-2 pl-10 border border-blue-500 rounded-full italic text-red-500 font-bold text-center" id="search-input" maxlength="15" placeholder="Shop for jewelry" type="text"/>
+            <i id="microphone-icon" class="fas fa-microphone absolute left-3 top-3 text-green-500 cursor-pointer"></i>
+            <div class="absolute left-8 top-3 h-6 border-r border-gray-300"></div>
+            <input class="w-full p-2 pl-12 border border-blue-500 rounded-full italic text-red-500 font-bold text-center" id="search-input" maxlength="15" placeholder="Shop for jewelry" type="text"/>
             <i class="fas fa-search absolute right-3 top-3 text-green-500 font-bold"></i>
             <div class="absolute w-full bg-white border rounded-lg mt-1 z-10 max-h-40 overflow-y-auto text-xs" id="suggestions-box"></div>
+        </div>
+    </div>
+
+    <!-- Voice Modal -->
+    <div id="voice-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+            <i class="fas fa-microphone text-green-500 text-4xl mb-4"></i>
+            <p class="mb-4" id="status-message">Click "Start" to begin recording</p>
+            <button id="start-recording" class="bg-blue-500 text-white px-4 py-2 rounded-full">Start</button>
         </div>
     </div>
     
@@ -1081,6 +1092,76 @@ function showCategory(category) {
             popupVideo.pause();
             popupVideo.currentTime = 0;
             videoPopup.classList.remove('active');
+        });
+
+
+
+
+
+
+
+       document.addEventListener('DOMContentLoaded', function() {
+            const microphoneIcon = document.getElementById('microphone-icon');
+            const voiceModal = document.getElementById('voice-modal');
+            const startButton = document.getElementById('start-recording');
+            const statusMessage = document.getElementById('status-message');
+            let recognition;
+
+            microphoneIcon.addEventListener('click', function() {
+                voiceModal.classList.remove('hidden');
+                setTimeout(() => {
+                    startButton.classList.add('hidden');
+                    startRecording();
+                }, 2000);
+            });
+
+            function startRecording() {
+                if (!('webkitSpeechRecognition' in window)) {
+                    alert('Your browser does not support speech recognition. Please use Google Chrome.');
+                } else {
+                    recognition = new webkitSpeechRecognition();
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+                    recognition.lang = 'en-US';
+
+                    recognition.onstart = function() {
+                        statusMessage.textContent = 'Listening...';
+                    };
+
+                    recognition.onspeechend = function() {
+                        recognition.stop();
+                    };
+
+                    recognition.onresult = function(event) {
+                        const transcript = event.results[0][0].transcript;
+                        document.getElementById('search-input').value = transcript;
+                        statusMessage.textContent = 'Recognized: ' + transcript;
+                        setTimeout(() => {
+                            voiceModal.classList.add('hidden');
+                        }, 2000);
+                    };
+
+                    recognition.onerror = function(event) {
+                        if (event.error === 'no-speech') {
+                            statusMessage.textContent = 'No sound detected. Please try again.';
+                        }
+                    };
+
+                    recognition.start();
+
+                    setTimeout(() => {
+                        recognition.stop();
+                        if (statusMessage.textContent === 'Listening...') {
+                            statusMessage.textContent = 'No sound detected. Please try again.';
+                        }
+                        setTimeout(() => {
+                            voiceModal.classList.add('hidden');
+                        }, 2000);
+                    }, 5000);
+                }
+            }
+
+            startButton.addEventListener('click', startRecording);
         });
   </script>
  </body>
