@@ -8,21 +8,21 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
   <style>
-   .video-popup {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .video-popup.active {
-            display: flex;
-        }
+  .video-popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .video-popup.active {
+      display: flex;
+    }
   </style>
 
  </head>
@@ -118,114 +118,154 @@
         </div>
     </div>
     
-        <div class="p-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="all">
-        <div class="space-y-2 cursor-pointer product-item dress" data-video="https://www.w3schools.com/html/mov_bbb.mp4">
-            <img alt="Sequin Backles dress on a mannequin" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/JRt1-arjmOAWRnRnFoVOh7gUIJhCJ-SdFBeC4LtHbg8.jpg" width="150"/>
-            <div class="text-sm product-name">Sequin Backles</div>
-            <div class="text-sm text-gray-500 product-price">$100.99 <span class="text-red-500">10% Off</span></div>
-            <div class="flex space-x-2">
-                <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
-                <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
-            </div>
-        </div>
-        <div class="space-y-2 cursor-pointer product-item dress" data-video="https://www.w3schools.com/html/movie.mp4">
-            <img alt="Casual Beach dress on a hanger" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/xpdQXvr7JdhquEtGowr-sALc8mIP9GcJKXnIj0V3AKI.jpg" width="150"/>
-            <div class="text-sm product-name">Casual Beach</div>
-            <div class="text-sm text-gray-500 product-price">$120.99</div>
-            <div class="flex space-x-2">
-                <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
-                <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
-            </div>
-        </div>
-        <div class="space-y-2 cursor-pointer product-item dress" data-video="https://www.w3schools.com/html/mov_bbb.mp4">
-            <img alt="Boho Strappy dress on a hanger" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/qGXvATDdkpu0588vloa429WDCLVGFXFLOUsCJLndW6s.jpg" width="150"/>
-            <div class="text-sm product-name">Boho Strappy</div>
-            <div class="text-sm text-gray-500 product-price">$110.99 <span class="text-red-500">30% Off</span></div>
-            <div class="flex space-x-2">
-                <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
-                <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
-            </div>
-        </div>
-        <div class="space-y-2 cursor-pointer product-item dress" data-video="https://www.w3schools.com/html/movie.mp4">
-            <img alt="Beach Dress on a hanger" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/8-cV9q2grVC4VYyLCW8xJBl1qtft5tHto_abEeDFT1I.jpg" width="150"/>
-            <div class="text-sm product-name">Beach Dress</div>
-            <div class="text-sm text-gray-500 product-price">$156.99</div>
-            <div class="flex space-x-2">
-                <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
-                <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
-            </div>
-        </div>
-        <div class="space-y-2 cursor-pointer product-item pants" data-video="https://www.w3schools.com/html/mov_bbb.mp4">
-            <img alt="Denim Jeans on a hanger" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/YDD6-xNMMb2nd2Io8ujXxz3dihrgUNLcoZEFcGgHd2s.jpg" width="150"/>
-            <div class="text-sm product-name">Denim Jeans</div>
-            <div class="text-sm text-gray-500 product-price">$80.99</div>
-            <div class="flex space-x-2">
-                <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
-                <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
-            </div>
-        </div>
-        <div class="space-y-2 cursor-pointer product-item pants" data-video="https://www.w3schools.com/html/movie.mp4">
-            <img alt="Chino Pants on a hanger" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/2gckCnAxUnOl3O7pnnwFfvfPiIfD_YzmII33wL6AXcI.jpg" width="150"/>
-            <div class="text-sm product-name">Chino Pants</div>
-            <div class="text-sm text-gray-500 product-price">$70.99</div>
-            <div class="flex space-x-2">
-                <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
-                <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
-            </div>
-        </div>
-        <div class="space-y-2 cursor-pointer product-item blazers" data-video="https://www.w3schools.com/html/mov_bbb.mp4">
-            <img alt="Formal Blazer on a mannequin" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/BBsdRy8aiYcEfXGOvcGrCU8F5rcVQD7NDuOSntKSKlw.jpg" width="150"/>
-            <div class="text-sm product-name">Formal Blazer</div>
-            <div class="text-sm text-gray-500 product-price">$150.99</div>
-            <div class="flex space-x-2">
-                <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
-                <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
-            </div>
-        </div>
-        <div class="space-y-2 cursor-pointer product-item blazers" data-video="https://www.w3schools.com/html/movie.mp4">
-            <img alt="Casual Blazer on a mannequin" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/0tBcX1VtKJZA26-wS-IdGfb4psuA_D2VfHtldEcRwGE.jpg" width="150"/>
-            <div class="text-sm product-name">Casual Blazer</div>
-            <div class="text-sm text-gray-500 product-price">$130.99</div>
-            <div class="flex space-x-2">
-                <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
-                <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
-            </div>
-        </div>
-        <div class="space-y-2 cursor-pointer product-item jackets" data-video="https://www.w3schools.com/html/mov_bbb.mp4">
-            <img alt="Leather Jacket on a mannequin" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/n_4Tanf3ID1VYqqxr7-8_TyZhe0i3PHi6md1F8iSN5c.jpg" width="150"/>
-            <div class="text-sm product-name">Leather Jacket</div>
-            <div class="text-sm text-gray-500 product-price">$200.99</div>
-            <div class="flex space-x-2">
-                <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
-                <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
-            </div>
-        </div>
-        <div class="space-y-2 cursor-pointer product-item jackets" data-video="https://www.w3schools.com/html/movie.mp4">
-            <img alt="Denim Jacket on a mannequin" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/T8U-W5i2ag8espW2tJOz3t-O9O0nO1uLUCk0PO5kL9Y.jpg" width="150"/>
-            <div class="text-sm product-name">Denim Jacket</div>
-            <div class="text-sm text-gray-500 product-price">$180.99</div>
-            <div class="flex space-x-2">
-                <button class="flex-1 px-2 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
-                <button class="flex-1 px-2 py-1 bg-black text-white rounded-lg text-xs">Buy Now</button>
-            </div>
-        </div>
+         <div class="p-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="all">
+    <div class="space-y-2 cursor-pointer product-item dress" data-video="https://www.w3schools.com/html/mov_bbb.mp4">
+      <img alt="Sequin Backles dress on a mannequin" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/JRt1-arjmOAWRnRnFoVOh7gUIJhCJ-SdFBeC4LtHbg8.jpg" width="150" onclick="showVideoPopup('https://www.w3schools.com/html/mov_bbb.mp4')"/>
+      <div class="text-sm product-name">Sequin Backles</div>
+      <div class="text-sm text-gray-500 product-price">$100.99 <span class="text-red-500">10% Off</span></div>
+      <div class="flex space-x-1">
+        <button class="flex-1 px-1 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+        <button class="flex-1 px-1 py-1 bg-black text-white rounded-lg text-xs" onclick="showBuyNowForm('Sequin Backles', '$100.99', 'https://storage.googleapis.com/a1aa/image/JRt1-arjmOAWRnRnFoVOh7gUIJhCJ-SdFBeC4LtHbg8.jpg')">Buy Now</button>
+      </div>
     </div>
-
-    <div class="video-popup" id="video-popup">
-        <div class="relative bg-white rounded-lg shadow-lg p-4 w-11/12 sm:w-3/4 md:w-1/2 lg:w-1/3 xl:w-1/4">
-            <button class="absolute top-2 right-2 text-red-500" id="close-popup">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
-            <video id="popup-video" class="w-full h-auto rounded-lg" controls autoplay>
-                <source src="" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-        </div>
+    <div class="space-y-2 cursor-pointer product-item dress" data-video="https://www.w3schools.com/html/movie.mp4">
+      <img alt="Casual Beach dress on a hanger" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/xpdQXvr7JdhquEtGowr-sALc8mIP9GcJKXnIj0V3AKI.jpg" width="150" onclick="showVideoPopup('https://www.w3schools.com/html/movie.mp4')"/>
+      <div class="text-sm product-name">Casual Beach</div>
+      <div class="text-sm text-gray-500 product-price">$120.99</div>
+      <div class="flex space-x-1">
+        <button class="flex-1 px-1 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+        <button class="flex-1 px-1 py-1 bg-black text-white rounded-lg text-xs" onclick="showBuyNowForm('Casual Beach', '$120.99', 'https://storage.googleapis.com/a1aa/image/xpdQXvr7JdhquEtGowr-sALc8mIP9GcJKXnIj0V3AKI.jpg')">Buy Now</button>
+      </div>
     </div>
+    <div class="space-y-2 cursor-pointer product-item dress" data-video="https://www.w3schools.com/html/mov_bbb.mp4">
+      <img alt="Boho Strappy dress on a hanger" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/qGXvATDdkpu0588vloa429WDCLVGFXFLOUsCJLndW6s.jpg" width="150" onclick="showVideoPopup('https://www.w3schools.com/html/mov_bbb.mp4')"/>
+      <div class="text-sm product-name">Boho Strappy</div>
+      <div class="text-sm text-gray-500 product-price">$110.99 <span class="text-red-500">30% Off</span></div>
+      <div class="flex space-x-1">
+        <button class="flex-1 px-1 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+        <button class="flex-1 px-1 py-1 bg-black text-white rounded-lg text-xs" onclick="showBuyNowForm('Boho Strappy', '$110.99', 'https://storage.googleapis.com/a1aa/image/qGXvATDdkpu0588vloa429WDCLVGFXFLOUsCJLndW6s.jpg')">Buy Now</button>
+      </div>
+    </div>
+    <div class="space-y-2 cursor-pointer product-item dress" data-video="https://www.w3schools.com/html/movie.mp4">
+      <img alt="Beach Dress on a hanger" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/8-cV9q2grVC4VYyLCW8xJBl1qtft5tHto_abEeDFT1I.jpg" width="150" onclick="showVideoPopup('https://www.w3schools.com/html/movie.mp4')"/>
+      <div class="text-sm product-name">Beach Dress</div>
+      <div class="text-sm text-gray-500 product-price">$156.99</div>
+      <div class="flex space-x-1">
+        <button class="flex-1 px-1 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+        <button class="flex-1 px-1 py-1 bg-black text-white rounded-lg text-xs" onclick="showBuyNowForm('Beach Dress', '$156.99', 'https://storage.googleapis.com/a1aa/image/8-cV9q2grVC4VYyLCW8xJBl1qtft5tHto_abEeDFT1I.jpg')">Buy Now</button>
+      </div>
+    </div>
+    <div class="space-y-2 cursor-pointer product-item pants" data-video="https://www.w3schools.com/html/mov_bbb.mp4">
+      <img alt="Denim Jeans on a hanger" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/YDD6-xNMMb2nd2Io8ujXxz3dihrgUNLcoZEFcGgHd2s.jpg" width="150" onclick="showVideoPopup('https://www.w3schools.com/html/mov_bbb.mp4')"/>
+      <div class="text-sm product-name">Denim Jeans</div>
+      <div class="text-sm text-gray-500 product-price">$80.99</div>
+      <div class="flex space-x-1">
+        <button class="flex-1 px-1 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+        <button class="flex-1 px-1 py-1 bg-black text-white rounded-lg text-xs" onclick="showBuyNowForm('Denim Jeans', '$80.99', 'https://storage.googleapis.com/a1aa/image/YDD6-xNMMb2nd2Io8ujXxz3dihrgUNLcoZEFcGgHd2s.jpg')">Buy Now</button>
+      </div>
+    </div>
+    <div class="space-y-2 cursor-pointer product-item pants" data-video="https://www.w3schools.com/html/movie.mp4">
+      <img alt="Chino Pants on a hanger" class="w-full h-48 object-cover rounded-lg item-photo" height="200" src="https://storage.googleapis.com/a1aa/image/2gckCnAxUnOl3O7pnnwFfvfPiIfD_YzmII33wL6AXcI.jpg" width="150" onclick="showVideoPopup('https://www.w3schools.com/html/movie.mp4')"/>
+      <div class="text-sm product-name">Chino Pants</div>
+      <div class="text-sm text-gray-500 product-price">$70.99</div>
+      <div class="flex space-x-1">
+        <button class="flex-1 px-1 py-1 border rounded-lg text-xs add-to-cart">Add to Bag</button>
+        <button class="flex-1 px-1 py-1 bg-black text-white rounded-lg text-xs" onclick="showBuyNowForm('Chino Pants', '$70.99', 'https://storage.googleapis.com/a1aa/image/2gckCnAxUnOl3O7pnnwFfvfPiIfD_YzmII33wL6AXcI.jpg')">Buy Now</button>
+      </div>
+    </div>
+  </div>
 
+  <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden" id="buyNowModal">
+    <div class="bg-white rounded-lg p-2 w-full max-w-xs relative">
+      <button class="absolute top-2 right-2 text-white bg-red-500 hover:bg-red-700 rounded-full p-1" onclick="closeBuyNowForm()">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="flex flex-col md:flex-row">
+        <div class="md:w-1/3">
+          <img alt="Selected product image" class="w-full h-20 object-cover rounded-lg" id="modalImage" src=""/>
+          <div class="text-sm text-gray-500 mt-2 flex items-center">
+            Price: $
+            <span data-base-price="" id="modalPrice"></span>
+            <span class="text-green-500 ml-2">Free Delivery</span>
+          </div>
+          <div class="flex items-center mt-2">
+            <button class="px-2 py-1 border rounded-lg text-xs" id="decrementQuantity">-</button>
+            <input class="mx-2 w-10 text-center border rounded-lg" id="quantity" readonly type="text" value="1"/>
+            <button class="px-2 py-1 border rounded-lg text-xs" id="incrementQuantity">+</button>
+          </div>
+        </div>
+        <div class="md:w-2/3 md:pl-2 mt-4 md:mt-0">
+          <form id="buyNowForm" onsubmit="handleBuyNow(event)">
+            <div class="mb-1">
+              <label class="block text-sm font-medium text-gray-700" for="name">Name</label>
+              <input class="mt-1 block w-full border rounded-lg p-1" id="name" name="name" required type="text"/>
+            </div>
+            <div class="mb-1">
+              <label class="block text-sm font-medium text-gray-700" for="address">Address with Code</label>
+              <input class="mt-1 block w-full border rounded-lg p-1" id="address" name="address" required type="text"/>
+            </div>
+            <div class="mb-1">
+              <label class="block text-sm font-medium text-gray-700" for="city">City</label>
+              <div class="grid grid-cols-2 gap-1">
+                <select class="mt-1 block w-full border rounded-lg p-1" id="city" name="city" required>
+                  <option value="damak">Damak</option>
+                  <option value="dharan">Dharan</option>
+                  <option value="illam">Illam</option>
+                  <option value="ithari">Ithari</option>
+                  <option value="janakpur">Janakpur</option>
+                  <option value="lahan">Lahan</option>
+                  <option value="rajbiraj">Rajbiraj</option>
+                  <option value="rengali">Rengali</option>
+                </select>
+                <input class="mt-1 block w-full border rounded-lg p-1 text-xs text-red-500" id="promoCode" name="promoCode" type="text" placeholder="Promo Code (Optional)"/>
+              </div>
+            </div>
+            <div class="mb-1">
+              <label class="block text-sm font-medium text-gray-700" for="phone">Phone</label>
+              <input class="mt-1 block w-full border rounded-lg p-1" id="phone" name="phone" required type="text"/>
+            </div>
+            <div class="mb-1">
+              <label class="block text-sm font-medium text-gray-700" for="payment">Payment Option</label>
+              <select class="mt-1 block w-full border rounded-lg p-1" id="payment" name="payment" required>
+                <option value="esewa">eSewa</option>
+                <option value="ime">IME</option>
+                <option value="khalti">Khalti</option>
+              </select>
+            </div>
+            <div class="mb-1">
+              <label class="block text-sm font-medium text-gray-700" for="upload">Upload Photo</label>
+              <input class="mt-1 block w-full border rounded-lg p-1" id="upload" name="upload" required type="file"/>
+            </div>
+            <button class="w-full bg-black text-white rounded-lg p-2" type="submit">Buy</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden" id="qrModal">
+    <div class="bg-white rounded-lg p-2 w-full max-w-xs relative">
+      <button class="absolute top-2 right-2 text-white bg-red-500 hover:bg-red-700 rounded-full p-1" onclick="closeQrModal()">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="text-center">
+        <img alt="QR code for payment" class="w-32 h-32 mx-auto" height="200" src="https://storage.googleapis.com/a1aa/image/cf0cG8CCSdc_lGoTnduMq7NTMaf07cB3NV18FmWC7m4.jpg" width="200"/>
+        <div class="text-red-500 mt-2">Scan QR, pay and take a screenshot and send.</div>
+      </div>
+    </div>
+  </div>
 
-
+  <div class="video-popup" id="videoPopup">
+    <div class="relative bg-white rounded-lg shadow-lg p-4 w-11/12 sm:w-3/4 md:w-1/2 lg:w-1/3 xl:w-1/4">
+      <button class="absolute top-2 right-2 text-red-500" onclick="closeVideoPopup()">
+        <i class="fas fa-times text-2xl"></i>
+      </button>
+      <video id="popupVideo" class="w-full h-auto rounded-lg" controls autoplay>
+        <source src="" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+    </div>
+  </div>
 
 
 
@@ -823,150 +863,55 @@ function showCategory(category) {
 
 
 
-
-     document.querySelectorAll('.buy-now').forEach(button => {
-    button.addEventListener('click', function() {
-      const name = this.getAttribute('data-name');
-      const price = this.getAttribute('data-price');
-      const image = this.getAttribute('data-image');
-      document.getElementById('modalImage').src = image;
-      document.getElementById('modalPrice').innerText = price;
-      document.getElementById('modalPrice').setAttribute('data-base-price', price);
-      document.getElementById('quantity').value = 1;
+  function showBuyNowForm(productName, productPrice, productImage) {
       document.getElementById('buyNowModal').classList.remove('hidden');
-    });
-   });
-
-   document.getElementById('closeModal').addEventListener('click', function() {
-    document.getElementById('buyNowModal').classList.add('hidden');
-   });
-
-   document.getElementById('incrementQuantity').addEventListener('click', function() {
-    const quantityInput = document.getElementById('quantity');
-    let quantity = parseInt(quantityInput.value);
-    if (quantity < 4) {
-      quantity++;
-      quantityInput.value = quantity;
-      updatePrice();
+      document.getElementById('modalImage').src = productImage;
+      document.getElementById('modalPrice').innerText = productPrice;
     }
-   });
 
-   document.getElementById('decrementQuantity').addEventListener('click', function() {
-    const quantityInput = document.getElementById('quantity');
-    let quantity = parseInt(quantityInput.value);
-    if (quantity > 1) {
-      quantity--;
-      quantityInput.value = quantity;
-      updatePrice();
+    function closeBuyNowForm() {
+      document.getElementById('buyNowModal').classList.add('hidden');
+      document.getElementById('buyNowForm').reset();
     }
-   });
 
-   function updatePrice() {
-    const basePrice = parseFloat(document.getElementById('modalPrice').getAttribute('data-base-price'));
-    const quantity = parseInt(document.getElementById('quantity').value);
-    const discount = (quantity - 1) * 0.10;
-    const promoCode = document.getElementById('promoCode').value.trim();
-    let totalPrice = basePrice * (1 - discount) * quantity;
-    if (promoCode) {
-      totalPrice *= 0.85; // Apply 15% discount for promo code
+    function showQrModal() {
+      document.getElementById('qrModal').classList.remove('hidden');
     }
-    document.getElementById('modalPrice').innerText = totalPrice.toFixed(2);
-   }
 
-   document.getElementById('payment').addEventListener('change', function() {
-    document.getElementById('qrModal').classList.remove('hidden');
-   });
+    function closeQrModal() {
+      document.getElementById('qrModal').classList.add('hidden');
+    }
 
-   document.getElementById('closeQrModal').addEventListener('click', function() {
-    document.getElementById('qrModal').classList.add('hidden');
-   });
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.innerText = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
 
-   document.getElementById('buyNowForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const name = document.getElementById('name').value;
-    const city = document.getElementById('city').value;
-    const phone = document.getElementById('phone').value;
-    const payment = document.getElementById('payment').value;
-    const price = document.getElementById('modalPrice').innerText;
-    const itemName = document.querySelector('.buy-now[data-name]').getAttribute('data-name');
-    const image = document.getElementById('modalImage').src;
+    function handleBuyNow(event) {
+      event.preventDefault();
+      closeBuyNowForm();
+      showToast('Purchase successful!');
+    }
 
-    const receipt = {
-      itemName,
-      price,
-      name,
-      city,
-      phone,
-      payment,
-      image,
-      timestamp: new Date().getTime()
-    };
+    function showVideoPopup(videoUrl) {
+      const videoPopup = document.getElementById('videoPopup');
+      const videoElement = document.getElementById('popupVideo');
+      videoElement.src = videoUrl;
+      videoPopup.classList.add('active');
+      videoElement.play();
+    }
 
-    localStorage.setItem(itemName, JSON.stringify(receipt));
-
-    document.getElementById('confirmationImage').src = image;
-    document.getElementById('confirmationItemName').innerText = itemName;
-    document.getElementById('confirmationPrice').innerText = price;
-    document.getElementById('confirmationName').innerText = name;
-    document.getElementById('confirmationCity').innerText = city;
-    document.getElementById('confirmationPhone').innerText = phone;
-    document.getElementById('confirmationPayment').innerText = payment;
-
-    document.getElementById('buyNowModal').classList.add('hidden');
-    document.getElementById('confirmationModal').classList.remove('hidden');
-   });
-
-   document.getElementById('closeConfirmationModal').addEventListener('click', function() {
-    document.getElementById('confirmationModal').classList.add('hidden');
-   });
-
-   document.getElementById('downloadPdf').addEventListener('click', function() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    const itemName = document.getElementById('confirmationItemName').innerText;
-    const price = document.getElementById('confirmationPrice').innerText;
-    const name = document.getElementById('confirmationName').innerText;
-    const city = document.getElementById('confirmationCity').innerText;
-    const phone = document.getElementById('confirmationPhone').innerText;
-    const payment = document.getElementById('confirmationPayment').innerText;
-    const image = document.getElementById('confirmationImage').src;
-
-    doc.text('Trendy Tides', 105, 10, null, null, 'center');
-    doc.setTextColor(0, 0, 255);
-    doc.text(`Item Name: ${itemName}`, 10, 20);
-    doc.text(`Price: $${price}`, 10, 30);
-    doc.text(`Name: ${name}`, 10, 40);
-    doc.text(`City: ${city}`, 10, 50);
-    doc.text(`Phone: ${phone}`, 10, 60);
-    doc.text(`Payment: ${payment}`, 10, 70);
-
-    doc.addImage(image, 'JPEG', 10, 80, 50, 50);
-
-    doc.save('order-details.pdf');
-   });
-
-   document.getElementById('backToShop').addEventListener('click', function() {
-    document.getElementById('confirmationModal').classList.add('hidden');
-   });
-
-   document.querySelectorAll('.item-photo').forEach(photo => {
-    photo.addEventListener('click', function(event) {
-      event.stopPropagation();
-      const itemName = this.closest('.product-item').getAttribute('data-name');
-      const receipt = JSON.parse(localStorage.getItem(itemName));
-      if (receipt && new Date().getTime() - receipt.timestamp < 7 * 24 * 60 * 60 * 1000) {
-        document.getElementById('confirmationImage').src = receipt.image;
-        document.getElementById('confirmationItemName').innerText = receipt.itemName;
-        document.getElementById('confirmationPrice').innerText = receipt.price;
-        document.getElementById('confirmationName').innerText = receipt.name;
-        document.getElementById('confirmationCity').innerText = receipt.city;
-        document.getElementById('confirmationPhone').innerText = receipt.phone;
-        document.getElementById('confirmationPayment').innerText = receipt.payment;
-        document.getElementById('confirmationModal').classList.remove('hidden');
-      }
-    });
-   });
+    function closeVideoPopup() {
+      const videoPopup = document.getElementById('videoPopup');
+      const videoElement = document.getElementById('popupVideo');
+      videoElement.pause();
+      videoElement.currentTime = 0;
+      videoPopup.classList.remove('active');
+    }
 
 
 
