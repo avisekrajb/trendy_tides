@@ -58,7 +58,7 @@
     </div>
     
     <!-- Search Bar -->
-   <div class="p-4" id="search-bar">
+  <div class="p-4" id="search-bar">
         <div class="relative">
             <i id="voice-microphone-icon" class="fas fa-microphone absolute left-3 top-3 text-green-500 cursor-pointer"></i>
             <div class="absolute left-8 top-3 h-6 border-r border-gray-300"></div>
@@ -68,15 +68,14 @@
         </div>
     </div>
 
-  
-   <div id="voice-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden">
+    <!-- Voice Modal -->
+    <div id="voice-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden">
         <div class="bg-white p-6 rounded-lg shadow-lg text-center">
-            <i class="fas fa-microphone text-green-500 text-4xl mb-4"></i>
-            <p class="mb-4" id="voice-status-message">Click "Start" to begin recording</p>
-            <button id="voice-start-recording" class="bg-blue-500 text-white px-4 py-2 rounded-full">Start</button>
+            <p id="voice-status-message" class="mb-4">Preparing to listen...</p>
+            <button id="voice-start-recording" class="bg-green-500 text-white px-4 py-2 rounded">Start Recording</button>
         </div>
     </div>
-    
+
     <!-- Categories -->
    <div class="flex justify-around p-4 border-b bg-white">
         <button class="px-4 py-2 bg-red-500 text-white" onclick="showCategory('all')">All</button>
@@ -766,102 +765,6 @@ function showCategory(category) {
 
 
 
-
-    document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('search-input');
-            const suggestionsBox = document.getElementById('suggestions-box');
-            const searchTerms = [
-                'Shop for clothes', 
-                'Shop for sari', 
-                'Shop for lehanga',
-                'Shop for shoes',
-                'Shop for accessories',
-                'Shop for bags',
-                'Shop for jewelry',
-                'Shop for watches',
-                'Shop for sunglasses',
-                'Shop for hats',
-                'Shop for belts',
-                'Shop for scarves',
-                'Shop for gloves'
-            ];
-            let termIndex = 0;
-
-            function cycleSearchTerms() {
-                searchInput.placeholder = searchTerms[termIndex];
-                termIndex = (termIndex + 1) % searchTerms.length;
-                setTimeout(() => {
-                    searchInput.placeholder = '';
-                    setTimeout(cycleSearchTerms, termIndex === 1 ? 2000 : 3000);
-                }, 2000);
-            }
-
-            function searchItems() {
-                const query = document.getElementById('search-input').value.toLowerCase().trim();
-                const items = document.querySelectorAll('.product-item');
-                let found = false;
-
-                items.forEach(item => {
-                    const itemName = item.querySelector('.text-sm')?.innerText.toLowerCase() || '';
-                    const match = itemName.includes(query) || itemName.includes(query.slice(0, -1)) || itemName.includes(query + 's');
-                    item.classList.toggle('hidden', !match);
-                    if (match) found = true;
-                });
-
-                if (!found && query) {
-                    showToast('Not Found');
-                } else {
-                    suggestionsBox.innerHTML = '';
-                }
-
-                // Show suggestions
-                const filteredTerms = searchTerms.filter(term => term.toLowerCase().includes(query));
-                if (query && filteredTerms.length > 0 && !found) {
-                    filteredTerms.forEach(term => {
-                        const suggestionItem = document.createElement('div');
-                        suggestionItem.className = 'p-2 cursor-pointer hover:bg-gray-200 text-sm';
-                        suggestionItem.textContent = term;
-                        suggestionItem.onclick = () => {
-                            searchInput.value = term;
-                            suggestionsBox.innerHTML = '';
-                            searchItems();
-                        };
-                        suggestionsBox.appendChild(suggestionItem);
-                    });
-                }
-            }
-
-            function showToast(message) {
-                const toast = document.createElement('div');
-                toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white p-2 rounded';
-                toast.innerText = message;
-                document.body.appendChild(toast);
-                setTimeout(() => {
-                    toast.remove();
-                }, 3000);
-            }
-
-            searchInput.addEventListener('input', searchItems);
-            searchInput.addEventListener('input', function() {
-                if (searchInput.value.length > 15) {
-                    searchInput.value = searchInput.value.slice(0, 15);
-                }
-            });
-
-            document.addEventListener('click', function(event) {
-                if (!event.target.closest('.relative')) {
-                    suggestionsBox.innerHTML = '';
-                }
-            });
-
-            cycleSearchTerms();
-        });
-
-
-
-
-
-
   function showBuyNowForm(productName, productPrice, productImage) {
       document.getElementById('buyNowModal').classList.remove('hidden');
       document.getElementById('modalImage').src = productImage;
@@ -1043,8 +946,97 @@ function showCategory(category) {
 
 
 
+  document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search-input');
+            const suggestionsBox = document.getElementById('suggestions-box');
+            const searchTerms = [
+                'Shop for clothes', 
+                'Shop for sari', 
+                'Shop for lehanga',
+                'Shop for shoes',
+                'Shop for accessories',
+                'Shop for bags',
+                'Shop for jewelry',
+                'Shop for watches',
+                'Shop for sunglasses',
+                'Shop for hats',
+                'Shop for belts',
+                'Shop for scarves',
+                'Shop for gloves'
+            ];
+            let termIndex = 0;
 
-         document.addEventListener('DOMContentLoaded', function() {
+            function cycleSearchTerms() {
+                searchInput.placeholder = searchTerms[termIndex];
+                termIndex = (termIndex + 1) % searchTerms.length;
+                setTimeout(() => {
+                    searchInput.placeholder = '';
+                    setTimeout(cycleSearchTerms, termIndex === 1 ? 2000 : 3000);
+                }, 2000);
+            }
+
+            function searchItems() {
+                const query = document.getElementById('search-input').value.toLowerCase().trim();
+                const items = document.querySelectorAll('.product-item');
+                let found = false;
+
+                items.forEach(item => {
+                    const itemName = item.querySelector('.text-sm')?.innerText.toLowerCase() || '';
+                    const match = itemName.includes(query) || itemName.includes(query.slice(0, -1)) || itemName.includes(query + 's');
+                    item.classList.toggle('hidden', !match);
+                    if (match) found = true;
+                });
+
+                if (!found && query) {
+                    showToast('Not Found');
+                } else {
+                    suggestionsBox.innerHTML = '';
+                }
+
+                // Show suggestions
+                const filteredTerms = searchTerms.filter(term => term.toLowerCase().includes(query));
+                if (query && filteredTerms.length > 0 && !found) {
+                    filteredTerms.forEach(term => {
+                        const suggestionItem = document.createElement('div');
+                        suggestionItem.className = 'p-2 cursor-pointer hover:bg-gray-200 text-sm';
+                        suggestionItem.textContent = term;
+                        suggestionItem.onclick = () => {
+                            searchInput.value = term;
+                            suggestionsBox.innerHTML = '';
+                            searchItems();
+                        };
+                        suggestionsBox.appendChild(suggestionItem);
+                    });
+                }
+            }
+
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white p-2 rounded';
+                toast.innerText = message;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
+
+            searchInput.addEventListener('input', searchItems);
+            searchInput.addEventListener('input', function() {
+                if (searchInput.value.length > 15) {
+                    searchInput.value = searchInput.value.slice(0, 15);
+                }
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.relative')) {
+                    suggestionsBox.innerHTML = '';
+                }
+            });
+
+            cycleSearchTerms();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
             const microphoneIcon = document.getElementById('voice-microphone-icon');
             const voiceModal = document.getElementById('voice-modal');
             const startButton = document.getElementById('voice-start-recording');
