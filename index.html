@@ -445,6 +445,14 @@
    </div>
   </div>
 
+
+
+
+      <div id="custom-notification" class="hidden fixed bottom-4 right-4 bg-blue-500 text-white p-4 rounded-lg shadow-lg flex items-center space-x-4">
+        <i class="fas fa-info-circle"></i>
+        <span>@ यो अभिषेक राजवंशी द्वारा विकास गरिएको हो !🇳🇵❤️!रिपब्लिक नेपाल ग्रुपमा स्वागत छ।</span>
+    </div>
+
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
   <script>
 function showCategory(category) {
@@ -953,6 +961,108 @@ function showCategory(category) {
       }
     });
    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+     function showNotification(message) {
+            console.log("Attempting to show notification...");
+
+            // Check if the browser supports notifications
+            if ("Notification" in window) {
+                console.log("Notification API supported");
+
+                // Check if the user has already granted permission for notifications
+                if (Notification.permission === "granted") {
+                    console.log("Permission granted, showing notification");
+                    // Show native notification (no styling for background or text)
+                    new Notification(message);
+
+                    // Show custom notification on the page
+                    const notification = document.getElementById("custom-notification");
+                    notification.querySelector('span').textContent = message;
+                    notification.style.display = "block";
+
+                    // Hide custom notification after 5 seconds
+                    setTimeout(() => {
+                        notification.style.display = "none";
+                    }, 5000);
+
+                    // Save the current time in local storage
+                    localStorage.setItem('lastNotificationTime', Date.now());
+                } else if (Notification.permission === "default") {
+                    console.log("Requesting permission...");
+                    // Ask for permission to show notifications
+                    Notification.requestPermission().then(permission => {
+                        if (permission === "granted") {
+                            console.log("Permission granted after request");
+                            new Notification(message);
+
+                            // Show custom notification on the page
+                            const notification = document.getElementById("custom-notification");
+                            notification.querySelector('span').textContent = message;
+                            notification.style.display = "block";
+
+                            // Hide custom notification after 5 seconds
+                            setTimeout(() => {
+                                notification.style.display = "none";
+                            }, 5000);
+
+                            // Save the current time in local storage
+                            localStorage.setItem('lastNotificationTime', Date.now());
+                        } else {
+                            console.log("Permission denied after request");
+                        }
+                    });
+                } else {
+                    console.log("Permission denied permanently");
+                }
+            } else {
+                console.log("Your browser does not support notifications.");
+                alert("Your browser does not support notifications.");
+            }
+        }
+
+        // Check if 5 days have passed since the last notification
+        function checkNotificationTime() {
+            const lastNotificationTime = localStorage.getItem('lastNotificationTime');
+            const currentTime = Date.now();
+            const fiveDaysInMilliseconds = 5 * 24 * 60 * 60 * 1000;
+
+            if (!lastNotificationTime || (currentTime - lastNotificationTime) > fiveDaysInMilliseconds) {
+                showNotification("@ यो अभिषेक राजवंशी द्वारा विकास गरिएको हो !🇳🇵❤️!रिपब्लिक नेपाल ग्रुपमा स्वागत छ।");
+            }
+        }
+
+        // Show daily morning notification
+        function showDailyMorningNotification() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+
+            // Check if it's morning (e.g., 7:00 AM)
+            if (hours === 7 && minutes === 0) {
+                showNotification("Good Morning!");
+            }
+        }
+
+        // Show notification after 5 seconds if 5 days have passed
+        window.onload = () => {
+            console.log("Page loaded, waiting for 5 seconds...");
+            setTimeout(checkNotificationTime, 5000); // 5000 milliseconds = 5 seconds
+
+            // Check every minute for the daily morning notification
+            setInterval(showDailyMorningNotification, 60000); // 60000 milliseconds = 1 minute
+        };
   </script>
  </body>
 </html>
