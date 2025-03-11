@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
   .video-popup {
       display: none;
@@ -1101,6 +1102,39 @@ function showCategory(category) {
             startButton.addEventListener('click', startRecording);
         });
 
+
+
+
+
+     document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            const hours = now.getHours();
+            const lastPopupTime = localStorage.getItem('lastPopupTime');
+            const sixHoursInMillis = 6 * 60 * 60 * 1000;
+            let greeting = '';
+
+            if (hours >= 6 && hours < 12) {
+                greeting = 'Good Morning';
+            } else if (hours >= 13 && hours < 18) {
+                greeting = 'Good Afternoon';
+            } else {
+                greeting = 'Hello';
+            }
+
+            if (!lastPopupTime || (now - new Date(lastPopupTime)) > sixHoursInMillis) {
+                Swal.fire({
+                    title: `<span style="color: red;">trendy_tides</span><br>${greeting}`,
+                    text: `The current time is ${now.toLocaleTimeString()}`,
+                    iconHtml: '',
+                    showClass: {
+                        popup: 'swal2-no-icon'
+                    },
+                    confirmButtonText: 'OK'
+                });
+
+                localStorage.setItem('lastPopupTime', now);
+            }
+        });
   </script>
  </body>
 </html>
