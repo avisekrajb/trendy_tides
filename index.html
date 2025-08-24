@@ -1,6 +1,7 @@
 
 
 
+
 <html class="scroll-smooth" lang="en">
  <head>
   <meta charset="utf-8"/>
@@ -920,9 +921,7 @@
         <h3 class="text-lg font-semibold text-dark-color">
          Food &amp; Beverages
         </h3>
-        <button class="text-primary-color text-sm font-medium hover:underline focus:outline-none" type="button">
-         Filter
-        </button>
+       
        </div>
        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="foodsProductsGrid">
        </div>
@@ -935,9 +934,7 @@
         <h3 class="text-lg font-semibold text-dark-color">
          Grocery &amp; Staples
         </h3>
-        <button class="text-primary-color text-sm font-medium hover:underline focus:outline-none" type="button">
-         Filter
-        </button>
+      
        </div>
        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="groceryProductsGrid">
        </div>
@@ -950,9 +947,7 @@
         <h3 class="text-lg font-semibold text-dark-color">
          Services
         </h3>
-        <button class="text-primary-color text-sm font-medium hover:underline focus:outline-none" type="button">
-         Filter
-        </button>
+       
        </div>
        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="servicesProductsGrid">
        </div>
@@ -1538,6 +1533,1112 @@
   <script>
 
 
+// View All functionality for different sections
+function setupViewAllFunctionality() {
+    // Handle all "View All" button clicks
+    document.querySelectorAll('.view-all-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const sectionType = this.dataset.section;
+            
+            switch(sectionType) {
+                case 'featured':
+                    showAllProducts('Featured Products', featuredProducts);
+                    break;
+                case 'deals':
+                    showAllProducts('Deals of the Day', dealsProducts);
+                    break;
+                case 'recent':
+                    showAllProducts('Recently Viewed', viewedProducts);
+                    break;
+                case 'categories':
+                    showAllCategories();
+                    break;
+                default:
+                    showAllProducts(sectionType, getAllProductsByCategory(sectionType));
+            }
+        });
+    });
+}
+
+// Show all products in a dedicated view
+function showAllProducts(title, products) {
+    // Create overlay for all products view
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-white z-50 overflow-y-auto';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', `All ${title}`);
+    
+    overlay.innerHTML = `
+        <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center shadow-sm z-20">
+            <button class="back-button mr-3 text-gray-600 hover:text-primary-color transition-colors text-xl" 
+                    type="button" aria-label="Back to previous view">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="text-xl font-bold flex-1">${title}</h1>
+            <button class="close-view-all text-gray-600 hover:text-primary-color transition-colors text-xl" 
+                    type="button" aria-label="Close view all">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="p-4">
+            <div class="flex justify-between items-center mb-4">
+                <span class="text-sm text-gray-500">${products.length} products</span>
+                <div class="flex items-center space-x-2">
+                    <button class="filter-btn text-primary-color text-sm font-medium hover:underline focus:outline-none flex items-center" 
+                            type="button" aria-label="Filter products">
+                        <i class="fas fa-filter mr-1"></i> Filter
+                    </button>
+                    <button class="sort-btn text-primary-color text-sm font-medium hover:underline focus:outline-none flex items-center" 
+                            type="button" aria-label="Sort products">
+                        <i class="fas fa-sort mr-1"></i> Sort
+                    </button>
+                </div>
+            </div>
+            
+            <div class="products-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                ${products.map(product => createProductCard(product)).join('')}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Add event listeners
+    overlay.querySelector('.back-button').addEventListener('click', () => {
+        overlay.remove();
+    });
+    
+    overlay.querySelector('.close-view-all').addEventListener('click', () => {
+        overlay.remove();
+    });
+    
+    // Add click handlers to product cards
+    overlay.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const productId = card.dataset.productId;
+            overlay.remove();
+            viewProductDetail(productId);
+        });
+    });
+    
+    // Filter functionality
+    overlay.querySelector('.filter-btn').addEventListener('click', () => {
+        showFilterModal(products, overlay.querySelector('.products-grid'));
+    });
+    
+    // Sort functionality
+    overlay.querySelector('.sort-btn').addEventListener('click', () => {
+        showSortOptions(products, overlay.querySelector('.products-grid'));
+    });
+}
+
+// Show all categories in an expanded view
+function showAllCategories() {
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-white z-50 overflow-y-auto';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'All Categories');
+    
+    overlay.innerHTML = `
+        <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center shadow-sm z-20">
+            <button class="back-button mr-3 text-gray-600 hover:text-primary-color transition-colors text-xl" 
+                    type="button" aria-label="Back to previous view">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="text-xl font-bold flex-1">All Categories</h1>
+            <button class="close-view-all text-gray-600 hover:text-primary-color transition-colors text-xl" 
+                    type="button" aria-label="Close categories view">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="p-4">
+            <div class="categories-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                ${categories.map(category => `
+                    <div class="category-card bg-white rounded-xl shadow-sm p-4 cursor-pointer hover:shadow-md transition flex flex-col items-center text-center" 
+                         data-category-id="${category.id}" role="button" tabindex="0" aria-label="Browse ${category.name} category">
+                        <div class="w-16 h-16 ${category.color} rounded-full flex items-center justify-center mb-3">
+                            <i class="${category.icon} text-xl"></i>
+                        </div>
+                        <h3 class="text-sm font-semibold mb-1">${category.name}</h3>
+                        <p class="text-xs text-gray-500">${category.subcategories.length} subcategories</p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Add event listeners
+    overlay.querySelector('.back-button').addEventListener('click', () => {
+        overlay.remove();
+    });
+    
+    overlay.querySelector('.close-view-all').addEventListener('click', () => {
+        overlay.remove();
+    });
+    
+    // Add click handlers to category cards
+    overlay.querySelectorAll('.category-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const categoryId = card.dataset.categoryId;
+            overlay.remove();
+            navigateToCategory(categoryId);
+        });
+        
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                const categoryId = card.dataset.categoryId;
+                overlay.remove();
+                navigateToCategory(categoryId);
+            }
+        });
+    });
+}
+
+// Helper function to create product card HTML
+function createProductCard(product) {
+    const fullStars = Math.floor(product.rating);
+    const hasHalfStar = product.rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    let starsHtml = "";
+    for (let i = 0; i < fullStars; i++) {
+        starsHtml += '<i class="fas fa-star"></i>';
+    }
+    if (hasHalfStar) {
+        starsHtml += '<i class="fas fa-star-half-alt"></i>';
+    }
+    for (let i = 0; i < emptyStars; i++) {
+        starsHtml += '<i class="far fa-star"></i>';
+    }
+
+    return `
+        <div class="product-card bg-white rounded-xl shadow-sm cursor-pointer flex flex-col overflow-hidden hover:shadow-md transition-all relative" 
+             data-product-id="${product.id}" role="button" tabindex="0" aria-label="View details of ${product.name}">
+            <div class="relative">
+                <img src="${product.img}" alt="${product.name}" class="w-full h-40 object-contain bg-gray-100 p-4" loading="lazy" />
+                ${product.discount ? `
+                    <span class="absolute top-2 left-2 bg-primary-color text-white text-xs font-bold px-2 py-1 rounded">
+                        ${product.discount}% OFF
+                    </span>
+                ` : ''}
+            </div>
+            <div class="p-3 flex flex-col flex-grow">
+                <h4 class="text-sm mb-1 line-clamp-2 flex-grow">${product.name}</h4>
+                <div class="flex items-center mb-1">
+                    <div class="rating-stars text-xs mr-1">${starsHtml}</div>
+                    <span class="text-xs text-gray-500">(${product.reviews})</span>
+                </div>
+                <div class="flex items-center mb-2">
+                    <p class="product-price font-bold text-primary-color mr-2">${formatPrice(product.price)}</p>
+                    ${product.originalPrice ? `
+                        <p class="product-original-price text-xs text-gray-500 line-through">${formatPrice(product.originalPrice)}</p>
+                    ` : ''}
+                </div>
+                ${product.delivery.includes("Free") ? `
+                    <p class="text-xs text-success-color mb-2">
+                        <i class="fas fa-truck mr-1"></i> ${product.delivery}
+                    </p>
+                ` : `
+                    <p class="text-xs text-gray-500 mb-2">
+                        <i class="fas fa-truck mr-1"></i> ${product.delivery}
+                    </p>
+                `}
+            </div>
+        </div>
+    `;
+}
+
+// Get all products by category
+function getAllProductsByCategory(category) {
+    return [
+        ...featuredProducts,
+        ...dealsProducts,
+        ...foodsProducts,
+        ...groceryProducts,
+        ...servicesProducts,
+    ].filter(p => p.category === category);
+}
+
+// Filter modal for products
+function showFilterModal(products, container) {
+    // Implementation of filter modal (similar to previous filter implementation)
+    // This would show price range, availability, etc.
+    showToast('Filter functionality would open here', 'info');
+}
+
+// Sort options for products
+function showSortOptions(products, container) {
+    // Implementation of sort options
+    showToast('Sort options would open here', 'info');
+}
+
+// Initialize the view all functionality when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    setupViewAllFunctionality();
+});
+
+// Add these styles to your CSS for the view all overlay
+const viewAllStyles = `
+.fixed.inset-0.bg-white {
+    animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.products-grid, .categories-grid {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+`;
+
+// Inject styles
+const styleElement = document.createElement('style');
+styleElement.textContent = viewAllStyles;
+document.head.appendChild(styleElement);
+
+
+// Filter Modal Functionality
+function setupFilterSystem() {
+    // Create filter modal HTML
+    const filterModalHTML = `
+        <div id="filterModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 hidden">
+            <div class="filter-popup bg-white rounded-xl w-11/12 max-w-sm overflow-hidden animate-scaleIn">
+                <header class="modal-header bg-gradient-to-r from-blue-500 to-purple-600 text-white flex justify-between items-center p-4">
+                    <h3 class="text-lg font-semibold">Filter Products</h3>
+                    <button aria-label="Close filter modal" class="close-filter text-white text-2xl font-bold focus:outline-none hover:text-gray-200 transition-colors" type="button">
+                        ×
+                    </button>
+                </header>
+                
+                <div class="modal-body p-4 max-h-96 overflow-y-auto">
+                    <!-- Price Range -->
+                    <div class="filter-section mb-6">
+                        <h4 class="text-md font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fas fa-tag mr-2 text-blue-500"></i> Price Range
+                        </h4>
+                        
+                        <div class="price-inputs flex justify-between items-center mb-3">
+                            <div class="price-input">
+                                <label class="text-xs text-gray-600 mb-1 block">Min Price</label>
+                                <input type="number" id="minPrice" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="0" min="0">
+                            </div>
+                            <span class="text-gray-400 mx-2">-</span>
+                            <div class="price-input">
+                                <label class="text-xs text-gray-600 mb-1 block">Max Price</label>
+                                <input type="number" id="maxPrice" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="10000" min="0">
+                            </div>
+                        </div>
+                        
+                        <div class="price-slider mb-2">
+                            <input type="range" min="0" max="10000" value="0" class="w-full" id="priceRangeMin">
+                            <input type="range" min="0" max="10000" value="10000" class="w-full" id="priceRangeMax">
+                        </div>
+                        
+                        <div class="price-display text-center">
+                            <span class="text-sm text-primary-color font-medium" id="priceRangeDisplay">Rs. 0 - Rs. 10,000</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Sort Options -->
+                    <div class="filter-section mb-6">
+                        <h4 class="text-md font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fas fa-sort-amount-down mr-2 text-purple-500"></i> Sort By
+                        </h4>
+                        
+                        <div class="sort-options space-y-2">
+                            <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                <input type="radio" name="sortOption" value="featured" class="h-4 w-4 text-primary-color focus:ring-primary-color" checked>
+                                <span class="ml-3 text-sm text-gray-700">Featured</span>
+                            </label>
+                            
+                            <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                <input type="radio" name="sortOption" value="priceLowHigh" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                                <span class="ml-3 text-sm text-gray-700">Price: Low to High</span>
+                            </label>
+                            
+                            <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                <input type="radio" name="sortOption" value="priceHighLow" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                                <span class="ml-3 text-sm text-gray-700">Price: High to Low</span>
+                            </label>
+                            
+                            <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                <input type="radio" name="sortOption" value="newest" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                                <span class="ml-3 text-sm text-gray-700">Newest First</span>
+                            </label>
+                            
+                            <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                <input type="radio" name="sortOption" value="rating" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                                <span class="ml-3 text-sm text-gray-700">Highest Rated</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Availability -->
+                    <div class="filter-section mb-6">
+                        <h4 class="text-md font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fas fa-check-circle mr-2 text-green-500"></i> Availability
+                        </h4>
+                        
+                        <label class="flex items-center cursor-pointer p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                            <input type="checkbox" id="inStockOnly" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                            <span class="ml-3 text-sm text-gray-700">In Stock Only</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <footer class="modal-footer p-4 border-t border-gray-200 flex justify-between">
+                    <button id="resetFilters" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none flex items-center">
+                        <i class="fas fa-redo mr-2"></i> Reset
+                    </button>
+                    <div class="flex gap-3">
+                        <button id="cancelFilters" class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none">
+                            Cancel
+                        </button>
+                        <button id="applyFilters" class="px-4 py-2 text-sm font-medium text-white bg-primary-color rounded-md hover:bg-red-700 focus:outline-none transition-colors">
+                            Apply Filters
+                        </button>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    `;
+    
+    // Add filter modal to body
+    document.body.insertAdjacentHTML('beforeend', filterModalHTML);
+    
+    // Get filter elements
+    const filterModal = document.getElementById('filterModal');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const closeFilterBtn = document.querySelector('.close-filter');
+    const cancelFiltersBtn = document.getElementById('cancelFilters');
+    const applyFiltersBtn = document.getElementById('applyFilters');
+    const resetFiltersBtn = document.getElementById('resetFilters');
+    const minPriceInput = document.getElementById('minPrice');
+    const maxPriceInput = document.getElementById('maxPrice');
+    const priceRangeMin = document.getElementById('priceRangeMin');
+    const priceRangeMax = document.getElementById('priceRangeMax');
+    const priceRangeDisplay = document.getElementById('priceRangeDisplay');
+    const inStockOnly = document.getElementById('inStockOnly');
+    
+    // Auto-dismiss timer
+    let autoDismissTimer;
+    
+    // Initialize price range slider
+    function initPriceRange() {
+        // Set initial values
+        minPriceInput.value = 0;
+        maxPriceInput.value = 10000;
+        
+        // Update display
+        updatePriceDisplay();
+        
+        // Connect range inputs to number inputs
+        priceRangeMin.addEventListener('input', () => {
+            minPriceInput.value = priceRangeMin.value;
+            updatePriceDisplay();
+        });
+        
+        priceRangeMax.addEventListener('input', () => {
+            maxPriceInput.value = priceRangeMax.value;
+            updatePriceDisplay();
+        });
+        
+        minPriceInput.addEventListener('input', () => {
+            priceRangeMin.value = minPriceInput.value;
+            updatePriceDisplay();
+        });
+        
+        maxPriceInput.addEventListener('input', () => {
+            priceRangeMax.value = maxPriceInput.value;
+            updatePriceDisplay();
+        });
+    }
+    
+    // Update price range display
+    function updatePriceDisplay() {
+        const min = parseInt(minPriceInput.value) || 0;
+        const max = parseInt(maxPriceInput.value) || 10000;
+        priceRangeDisplay.textContent = `Rs. ${min.toLocaleString()} - Rs. ${max.toLocaleString()}`;
+    }
+    
+    // Show filter modal
+    function showFilterModal() {
+        filterModal.classList.remove('hidden');
+        
+        // Start auto-dismiss timer (10 seconds)
+        resetAutoDismissTimer();
+        
+        // Add event listeners to reset timer on interaction
+        filterModal.addEventListener('mousemove', resetAutoDismissTimer);
+        filterModal.addEventListener('keypress', resetAutoDismissTimer);
+    }
+    
+    // Hide filter modal
+    function hideFilterModal() {
+        filterModal.classList.add('hidden');
+        
+        // Clear auto-dismiss timer
+        clearTimeout(autoDismissTimer);
+        
+        // Remove event listeners
+        filterModal.removeEventListener('mousemove', resetAutoDismissTimer);
+        filterModal.removeEventListener('keypress', resetAutoDismissTimer);
+    }
+    
+    // Reset auto-dismiss timer
+    function resetAutoDismissTimer() {
+        clearTimeout(autoDismissTimer);
+        autoDismissTimer = setTimeout(() => {
+            hideFilterModal();
+            showToast('Filters applied automatically', 'info');
+            applyFilters();
+        }, 10000); // 10 seconds
+    }
+    
+    // Apply filters
+    function applyFilters() {
+        const minPrice = parseInt(minPriceInput.value) || 0;
+        const maxPrice = parseInt(maxPriceInput.value) || 10000;
+        const sortOption = document.querySelector('input[name="sortOption"]:checked').value;
+        const onlyInStock = inStockOnly.checked;
+        
+        // Get current section
+        const currentSection = document.querySelector('.content-section:not(.hidden)');
+        const productGrid = currentSection.querySelector('.grid');
+        
+        if (!productGrid) {
+            hideFilterModal();
+            return;
+        }
+        
+        // Get all products in current section
+        const productCards = Array.from(productGrid.querySelectorAll('.product-card'));
+        
+        // Filter by price and stock
+        const filteredProducts = productCards.filter(card => {
+            const priceText = card.querySelector('.product-price').textContent;
+            const price = parseInt(priceText.replace(/[^\d]/g, ''));
+            
+            // Check price range
+            const inPriceRange = price >= minPrice && price <= maxPrice;
+            
+            // Check stock availability (if enabled)
+            let inStock = true;
+            if (onlyInStock) {
+                const stockElement = card.querySelector('.text-success-color');
+                inStock = stockElement && stockElement.textContent.includes('In Stock');
+            }
+            
+            return inPriceRange && inStock;
+        });
+        
+        // Sort products
+        filteredProducts.sort((a, b) => {
+            const priceA = parseInt(a.querySelector('.product-price').textContent.replace(/[^\d]/g, ''));
+            const priceB = parseInt(b.querySelector('.product-price').textContent.replace(/[^\d]/g, ''));
+            const ratingA = parseFloat(a.querySelector('.rating-stars').dataset.rating || 0);
+            const ratingB = parseFloat(b.querySelector('.rating-stars').dataset.rating || 0);
+            
+            switch(sortOption) {
+                case 'priceLowHigh':
+                    return priceA - priceB;
+                case 'priceHighLow':
+                    return priceB - priceA;
+                case 'rating':
+                    return ratingB - ratingA;
+                case 'newest':
+                    // For demo purposes, we'll sort by a random "newness" attribute
+                    return Math.random() - 0.5;
+                default:
+                    return 0; // Featured - no sorting
+            }
+        });
+        
+        // Re-render filtered products
+        productGrid.innerHTML = '';
+        filteredProducts.forEach(product => {
+            productGrid.appendChild(product);
+        });
+        
+        // Show results count
+        const sectionTitle = currentSection.querySelector('h3');
+        if (sectionTitle) {
+            const resultsCount = document.createElement('span');
+            resultsCount.className = 'text-sm font-normal text-gray-500 ml-2';
+            resultsCount.textContent = `(${filteredProducts.length} results)`;
+            
+            // Remove existing count if any
+            const existingCount = sectionTitle.querySelector('.results-count');
+            if (existingCount) {
+                existingCount.remove();
+            }
+            
+            resultsCount.className = 'results-count text-sm font-normal text-gray-500 ml-2';
+            sectionTitle.appendChild(resultsCount);
+        }
+        
+        hideFilterModal();
+        showToast(`Filters applied: ${filteredProducts.length} products found`, 'success');
+    }
+    
+    // Reset filters
+    function resetFilters() {
+        minPriceInput.value = 0;
+        maxPriceInput.value = 10000;
+        priceRangeMin.value = 0;
+        priceRangeMax.value = 10000;
+        document.querySelector('input[name="sortOption"][value="featured"]').checked = true;
+        inStockOnly.checked = false;
+        updatePriceDisplay();
+        
+        showToast('Filters reset', 'info');
+    }
+    
+    // Initialize event listeners
+    function initFilterEvents() {
+        // Add filter buttons to all sections
+        document.querySelectorAll('.products-section, #foodsContent, #groceryContent, #servicesContent').forEach(section => {
+            const heading = section.querySelector('h3');
+            if (heading && !heading.nextElementSibling?.classList?.contains('filter-btn')) {
+                const filterBtn = document.createElement('button');
+                filterBtn.className = 'filter-btn text-primary-color text-sm font-medium hover:underline focus:outline-none flex items-center';
+                filterBtn.innerHTML = '<i class="fas fa-filter mr-1"></i> Filter';
+                filterBtn.addEventListener('click', showFilterModal);
+                heading.parentNode.insertBefore(filterBtn, heading.nextSibling);
+            }
+        });
+        
+        // Existing filter buttons
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', showFilterModal);
+        });
+        
+        // Modal buttons
+        closeFilterBtn.addEventListener('click', hideFilterModal);
+        cancelFiltersBtn.addEventListener('click', hideFilterModal);
+        applyFiltersBtn.addEventListener('click', applyFilters);
+        resetFiltersBtn.addEventListener('click', resetFilters);
+        
+        // Close modal on outside click
+        filterModal.addEventListener('click', (e) => {
+            if (e.target === filterModal) {
+                hideFilterModal();
+            }
+        });
+    }
+    
+    // Initialize everything
+    initPriceRange();
+    initFilterEvents();
+}
+
+// Add CSS for filter modal (dynamically inject)
+const filterStyles = `
+.filter-popup {
+    animation: scaleIn 0.3s ease forwards;
+}
+
+.filter-popup .price-slider {
+    position: relative;
+    height: 5px;
+    background: #ddd;
+    border-radius: 5px;
+    margin: 20px 0;
+}
+
+.filter-popup .price-slider input[type="range"] {
+    position: absolute;
+    width: 100%;
+    height: 5px;
+    background: none;
+    pointer-events: none;
+    -webkit-appearance: none;
+}
+
+.filter-popup .price-slider input[type="range"]::-webkit-slider-thumb {
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    pointer-events: auto;
+    -webkit-appearance: none;
+    cursor: grab;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.filter-popup .price-slider input[type="range"]::-webkit-slider-thumb:active {
+    cursor: grabbing;
+    transform: scale(1.2);
+}
+
+.filter-section {
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 1rem;
+}
+
+.filter-section:last-child {
+    border-bottom: none;
+}
+
+/* Animation for auto-dismiss warning */
+@keyframes pulseWarning {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(234, 88, 12, 0); }
+}
+
+.auto-dismiss-warning {
+    animation: pulseWarning 2s infinite;
+}
+`;
+
+// Inject styles
+const styleSheet = document.createElement('style');
+styleSheet.textContent = filterStyles;
+document.head.appendChild(styleSheet);
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', setupFilterSystem);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Enhanced product detail function with multiple photos
+function renderProductDetail(product) {
+  // Add to viewed products if not already there
+  if (!viewedProducts.some((p) => p.id === product.id)) {
+    viewedProducts.unshift(product);
+    if (viewedProducts.length > 6) viewedProducts.pop();
+    updateRecentProducts();
+  }
+
+  // Generate multiple product photos (in a real app, these would come from the product data)
+  const productPhotos = [
+    product.img, // Main image
+    "https://placehold.co/300x300/EFEFEF/999999/png?text=Product+Angle",
+    "https://placehold.co/300x300/EFEFEF/999999/png?text=Close+Up+View",
+    "https://placehold.co/300x300/EFEFEF/999999/png?text=Different+Color"
+  ];
+
+  // Rating stars
+  const fullStars = Math.floor(product.rating);
+  const hasHalfStar = product.rating % 1 >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+  let starsHtml = "";
+  for (let i = 0; i < fullStars; i++) {
+    starsHtml += '<i class="fas fa-star"></i>';
+  }
+  if (hasHalfStar) {
+    starsHtml += '<i class="fas fa-star-half-alt"></i>';
+  }
+  for (let i = 0; i < emptyStars; i++) {
+    starsHtml += '<i class="far fa-star"></i>';
+  }
+
+  // Features list
+  const featuresHtml = product.features
+    .map(
+      (f) => `
+      <li class="flex items-start">
+        <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+        <span>${f}</span>
+      </li>
+    `
+    )
+    .join("");
+
+  // Related products (same category, excluding current)
+  const relatedProducts = [
+    ...featuredProducts,
+    ...dealsProducts,
+    ...foodsProducts,
+    ...groceryProducts,
+    ...servicesProducts,
+  ].filter((p) => p.category === product.category && p.id !== product.id);
+
+  // Generate thumbnail HTML with active state for the first image
+  const thumbnailsHtml = productPhotos.map((photo, index) => `
+    <div class="thumbnail w-16 h-16 bg-gray-100 rounded border-2 ${
+      index === 0 ? 'border-primary-color' : 'border-gray-200'
+    } flex-shrink-0 cursor-pointer transition-all duration-200 hover:border-primary-color" 
+        data-photo-index="${index}">
+      <img src="${photo}" alt="${product.name} view ${index + 1}" 
+           class="w-full h-full object-contain" loading="lazy" />
+    </div>
+  `).join('');
+
+  // Generate dots indicator HTML
+  const dotsHtml = productPhotos.map((_, index) => `
+    <button class="dot w-2 h-2 rounded-full mx-1 focus:outline-none ${
+      index === 0 ? 'bg-primary-color' : 'bg-gray-300'
+    }" data-photo-index="${index}" aria-label="View product image ${index + 1}"></button>
+  `).join('');
+
+  productDetailContent.innerHTML = `
+    <div class="product-images mb-4">
+      <div class="main-image bg-gray-100 rounded-lg overflow-hidden mb-2 relative">
+        <img src="${productPhotos[0]}" alt="${product.name}" 
+             class="w-full h-64 object-contain transition-opacity duration-300" 
+             id="mainProductImage" loading="lazy" />
+        
+        ${product.discount ? `
+          <span class="absolute top-2 left-2 bg-primary-color text-white text-xs font-bold px-2 py-1 rounded">
+            ${product.discount}% OFF
+          </span>
+        ` : ''}
+        
+        <!-- Zoom button -->
+        <button class="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors focus:outline-none" 
+                id="zoomImageBtn" aria-label="Zoom image">
+          <i class="fas fa-search-plus text-gray-600"></i>
+        </button>
+      </div>
+      
+      <div class="thumbnail-images flex gap-2 overflow-x-auto pb-2 justify-center">
+        ${thumbnailsHtml}
+      </div>
+      
+      <!-- Dots indicator -->
+      <div class="dots-indicator flex justify-center mt-2">
+        ${dotsHtml}
+      </div>
+    </div>
+
+    <div class="product-info mb-6">
+      <h1 class="text-xl font-bold text-dark-color mb-2">${product.name}</h1>
+      <div class="flex items-center mb-3">
+        <div class="rating-stars text-sm mr-2">${starsHtml}</div>
+        <span class="text-sm text-gray-500 mr-3">${product.rating} (${product.reviews} reviews)</span>
+        <span class="text-sm text-success-color">
+          <i class="fas fa-check-circle mr-1"></i> ${
+            product.inStock ? "In Stock" : "Out of Stock"
+          }
+        </span>
+      </div>
+
+      <div class="price-section bg-gray-50 p-3 rounded-lg mb-4">
+        ${
+          product.originalPrice
+            ? `<div class="text-xs text-gray-500 line-through mb-1">${formatPrice(
+                product.originalPrice
+              )}</div>`
+            : ""
+        }
+        <div class="flex items-center">
+          <div class="text-2xl font-bold text-primary-color mr-3">${formatPrice(
+            product.price
+          )}</div>
+          ${
+            product.discount
+              ? `<span class="bg-primary-color text-white text-xs font-bold px-2 py-1 rounded">
+              Save ${product.discount}%
+            </span>`
+              : ""
+          }
+        </div>
+        ${
+          product.delivery.includes("Free")
+            ? `<div class="text-sm text-success-color mt-2">
+              <i class="fas fa-truck mr-1"></i> ${product.delivery}
+            </div>`
+            : `<div class="text-sm text-gray-600 mt-2">
+              <i class="fas fa-truck mr-1"></i> ${product.delivery}
+            </div>`
+        }
+      </div>
+
+      <div class="seller-info flex items-center mb-4 p-3 bg-gray-50 rounded-lg">
+        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+          <i class="fas fa-store text-gray-500"></i>
+        </div>
+        <div>
+          <div class="text-sm font-medium">Sold by ${product.seller}</div>
+          <div class="text-xs text-gray-500">${product.lastBought}</div>
+        </div>
+      </div>
+
+      <div class="product-actions flex gap-3 mb-6">
+        <button class="add-to-cart flex-1 bg-light-color text-dark-color rounded-lg py-3 text-sm font-medium hover:bg-accent-color hover:text-white transition-colors focus:outline-none">
+          <i class="fas fa-cart-plus mr-2"></i> Add to Cart
+        </button>
+        <button class="buy-now flex-1 bg-primary-color text-white rounded-lg py-3 text-sm font-medium hover:bg-red-700 transition-colors focus:outline-none">
+          Buy Now
+        </button>
+      </div>
+    </div>
+
+    <div class="product-details mb-6">
+      <h2 class="text-lg font-bold text-dark-color mb-3">Product Details</h2>
+      <p class="text-gray-700 mb-4">${product.description}</p>
+
+      <h3 class="text-md font-semibold text-dark-color mb-2">Features</h3>
+      <ul class="features-list space-y-2 mb-4">
+        ${featuresHtml}
+      </ul>
+    </div>
+
+    <div class="reviews-section">
+      <h2 class="text-lg font-bold text-dark-color mb-3">Customer Reviews</h2>
+      <div class="review bg-gray-50 p-3 rounded-lg mb-3">
+        <div class="flex items-center mb-2">
+          <div class="w-8 h-8 rounded-full bg-gray-300 mr-2"></div>
+          <div>
+            <div class="text-sm font-medium">Ramesh Shrestha</div>
+            <div class="rating-stars text-xs">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star-half-alt"></i>
+            </div>
+          </div>
+        </div>
+        <p class="text-sm text-gray-700">
+          Great product! Works perfectly as described. Delivery was fast too.
+        </p>
+        <div class="text-xs text-gray-500 mt-1">Reviewed on 12 May 2023</div>
+      </div>
+
+      <div class="review bg-gray-50 p-3 rounded-lg">
+        <div class="flex items-center mb-2">
+          <div class="w-8 h-8 rounded-full bg-gray-300 mr-2"></div>
+          <div>
+            <div class="text-sm font-medium">Sita Gurung</div>
+            <div class="rating-stars text-xs">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="far fa-star"></i>
+            </div>
+          </div>
+        </div>
+        <p class="text-sm text-gray-700">
+          Good quality but delivery took longer than expected.
+        </p>
+        <div class="text-xs text-gray-500 mt-1">Reviewed on 5 May 2023</div>
+      </div>
+
+      <button
+        class="w-full mt-4 text-primary-color text-sm font-medium hover:underline focus:outline-none"
+        type="button"
+      >
+        View All Reviews
+      </button>
+    </div>
+
+    <div class="related-products mt-8">
+      <h3 class="text-lg font-semibold mb-3">Related Products</h3>
+      <div class="related-products-slider" tabindex="0" aria-label="Related products slider">
+        ${relatedProducts
+          .map(
+            (p) => `
+            <div class="related-product-card" role="button" tabindex="0" aria-label="View details of ${p.name}" data-product-id="${p.id}">
+              <img src="${p.img}" alt="${p.name}" loading="lazy" />
+              <div class="text-xs font-medium text-center">${p.name}</div>
+              <div class="text-xs text-primary-color font-semibold">${formatPrice(p.price)}</div>
+            </div>
+          `
+          )
+          .join("")}
+      </div>
+    </div>
+  `;
+
+  // Add event listeners for image switching
+  const mainImage = document.getElementById('mainProductImage');
+  const thumbnails = productDetailContent.querySelectorAll('.thumbnail');
+  const dots = productDetailContent.querySelectorAll('.dot');
+  
+  // Function to switch the main image
+  function switchImage(index) {
+    // Fade out current image
+    mainImage.style.opacity = '0';
+    
+    setTimeout(() => {
+      // Change image source
+      mainImage.src = productPhotos[index];
+      mainImage.alt = `${product.name} view ${index + 1}`;
+      
+      // Fade in new image
+      mainImage.style.opacity = '1';
+      
+      // Update active states
+      thumbnails.forEach((thumb, i) => {
+        if (i === index) {
+          thumb.classList.remove('border-gray-200');
+          thumb.classList.add('border-primary-color');
+        } else {
+          thumb.classList.remove('border-primary-color');
+          thumb.classList.add('border-gray-200');
+        }
+      });
+      
+      // Update dots
+      dots.forEach((dot, i) => {
+        if (i === index) {
+          dot.classList.remove('bg-gray-300');
+          dot.classList.add('bg-primary-color');
+        } else {
+          dot.classList.remove('bg-primary-color');
+          dot.classList.add('bg-gray-300');
+        }
+      });
+    }, 150);
+  }
+  
+  // Add click events to thumbnails
+  thumbnails.forEach((thumbnail, index) => {
+    thumbnail.addEventListener('click', () => {
+      switchImage(index);
+    });
+  });
+  
+  // Add click events to dots
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+      switchImage(index);
+    });
+  });
+  
+  // Add keyboard navigation for dots
+  dots.forEach((dot, index) => {
+    dot.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        switchImage(index);
+      }
+    });
+  });
+
+  // Add zoom functionality
+  const zoomBtn = document.getElementById('zoomImageBtn');
+  zoomBtn.addEventListener('click', () => {
+    // Create modal for zoomed image
+    const zoomModal = document.createElement('div');
+    zoomModal.className = 'fixed inset-0 bg-black bg-opacity-90 flex justify-center items-center z-50';
+    zoomModal.innerHTML = `
+      <div class="relative max-w-4xl w-full h-full flex justify-center items-center p-4">
+        <button class="absolute top-4 right-4 text-white text-3xl font-bold focus:outline-none z-10 hover:text-gray-300 transition-colors" 
+                aria-label="Close zoom view">
+          ×
+        </button>
+        <img src="${mainImage.src}" alt="${mainImage.alt}" 
+             class="max-w-full max-h-full object-contain" />
+      </div>
+    `;
+    
+    document.body.appendChild(zoomModal);
+    
+    // Close modal on button click
+    zoomModal.querySelector('button').addEventListener('click', () => {
+      zoomModal.remove();
+    });
+    
+    // Close modal on outside click
+    zoomModal.addEventListener('click', (e) => {
+      if (e.target === zoomModal) {
+        zoomModal.remove();
+      }
+    });
+    
+    // Close modal on Escape key
+    document.addEventListener('keydown', function closeOnEscape(e) {
+      if (e.key === 'Escape') {
+        zoomModal.remove();
+        document.removeEventListener('keydown', closeOnEscape);
+      }
+    });
+  });
+
+  // Add event listeners for add to cart and buy now buttons
+  productDetailContent.querySelector(".add-to-cart").addEventListener("click", () => {
+    addToCart(product.id);
+  });
+
+  productDetailContent.querySelector(".buy-now").addEventListener("click", () => {
+    buyNow(product.id);
+  });
+
+  // Add event listeners for related products
+  productDetailContent.querySelectorAll(".related-product-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const pid = card.dataset.productId;
+      viewProductDetail(pid);
+    });
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        const pid = card.dataset.productId;
+        viewProductDetail(pid);
+      }
+    });
+  });
+}
+
+// Update the product data structure to include multiple images
+// This should be added to each product object in your data arrays
+// For example, in your featuredProducts array:
+/*
+const featuredProducts = [
+  {
+    id: "p1",
+    name: "Wireless Bluetooth Headphones with Mic",
+    price: 2499,
+    originalPrice: 3499,
+    discount: 29,
+    img: "https://placehold.co/300x240/png?text=Wireless+Headphones",
+    images: [
+      "https://placehold.co/300x240/png?text=Wireless+Headphones",
+      "https://placehold.co/300x240/png?text=Headphones+Angle",
+      "https://placehold.co/300x240/png?text=Headphones+Case",
+      "https://placehold.co/300x240/png?text=Headphones+Worn"
+    ],
+    // ... other properties
+  },
+  // ... other products
+];
+*/
+
+// If you update your product data structure, modify the renderProductDetail function
+// to use product.images instead of the hardcoded productPhotos array
+
 
 // Enhanced Search Bar Functionality
 document.addEventListener("DOMContentLoaded", function() {
@@ -1563,7 +2664,10 @@ document.addEventListener("DOMContentLoaded", function() {
                   aria-label="Voice search" type="button">
             <i class="fas fa-microphone"></i>
           </button>
-        
+          <button class="image-search p-2 text-gray-400 hover:text-primary-color transition-colors" 
+                  aria-label="Search by image" type="button">
+            <i class="fas fa-camera"></i>
+          </button>
         </div>
       </div>
     `;
@@ -6847,4 +7951,3 @@ function showPhotoModal(photoUrl) {
 </script>
  </body>
 </html>
-
