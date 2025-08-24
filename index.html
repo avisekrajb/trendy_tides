@@ -1,7 +1,3 @@
-
-
-
-
 <html class="scroll-smooth" lang="en">
  <head>
   <meta charset="utf-8"/>
@@ -679,6 +675,35 @@
   100% { transform: rotate(360deg); }
 }
 
+
+/* Seller info clickable styles */
+.seller-info {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.seller-info:hover {
+    background-color: #f8f9fa !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.seller-name {
+    color: var(--primary-color);
+    transition: color 0.3s ease;
+}
+
+.seller-info:hover .seller-name {
+    color: var(--dark-color);
+}
+
+.fa-store {
+    transition: color 0.3s ease;
+}
+
+.seller-info:hover .fa-store {
+    color: var(--primary-color);
+}
   </style>
  </head>
  <body class="relative">
@@ -1532,6 +1557,636 @@
   </script>
   <script>
 
+// Update product detail rendering to make seller info clickable
+function enhanceProductDetailSellerInfo() {
+    // Store the original renderProductDetail function
+    const originalRenderProductDetail = window.renderProductDetail;
+    
+    // Override the renderProductDetail function
+    window.renderProductDetail = function(product) {
+        // Call the original function first
+        originalRenderProductDetail(product);
+        
+        // After the product detail is rendered, enhance the seller info
+        setTimeout(() => {
+            const sellerInfo = document.querySelector('.seller-info');
+            if (sellerInfo) {
+                // Make seller info clickable
+                sellerInfo.style.cursor = 'pointer';
+                sellerInfo.classList.add('hover:bg-gray-100', 'transition-colors', 'duration-300', 'p-2', 'rounded-lg');
+                
+                // Add click event to seller info
+                sellerInfo.addEventListener('click', (e) => {
+                    // Don't trigger if clicking on a button inside
+                    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) {
+                        return;
+                    }
+                    
+                    showSellerProfile(product.seller);
+                });
+                
+                // Find the seller name element and make it visually clickable
+                const sellerName = sellerInfo.querySelector('.text-sm.font-medium');
+                if (sellerName) {
+                    sellerName.classList.add('seller-name', 'text-primary-color', 'hover:underline', 'transition-all', 'duration-300');
+                }
+                
+                // Find the store icon and make it visually clickable
+                const storeIcon = sellerInfo.querySelector('.fa-store');
+                if (storeIcon) {
+                    storeIcon.classList.add('hover:text-primary-color', 'transition-colors', 'duration-300', 'transform', 'hover:scale-110');
+                }
+                
+                // Add a "View Shop" button for better UX
+                if (!sellerInfo.querySelector('.view-shop-btn')) {
+                    const viewShopBtn = document.createElement('button');
+                    viewShopBtn.className = 'view-shop-btn ml-2 px-3 py-1 bg-primary-color text-white text-xs rounded-full hover:bg-primary-dark transition-colors duration-300';
+                    viewShopBtn.innerHTML = '<i class="fas fa-store mr-1"></i> View Shop';
+                    viewShopBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        showSellerProfile(product.seller);
+                    });
+                    
+                    sellerInfo.appendChild(viewShopBtn);
+                }
+            }
+        }, 100);
+    };
+}
+
+// Show seller profile
+function showSellerProfile(sellerName) {
+    // Create seller profile section if it doesn't exist
+    if (!document.getElementById('sellerProfile')) {
+        const sellerProfileSection = document.createElement('section');
+        sellerProfileSection.id = 'sellerProfile';
+        sellerProfileSection.className = 'content-section fade-in hidden';
+        sellerProfileSection.setAttribute('aria-label', 'Seller profile section');
+        sellerProfileSection.tabIndex = 0;
+        sellerProfileSection.innerHTML = `
+            <div class="p-4" id="sellerProfileContent">
+                <div class="flex items-center mb-4">
+                    <button class="back-to-product mr-3 text-gray-600 hover:text-primary-color transition-colors text-xl p-2 rounded-full hover:bg-gray-100" 
+                            type="button" aria-label="Back to product">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="text-xl font-bold">Seller Profile</h2>
+                </div>
+                <div id="sellerDetails"></div>
+            </div>
+        `;
+        
+        document.querySelector('main').appendChild(sellerProfileSection);
+        
+        // Add back button functionality
+        sellerProfileSection.querySelector('.back-to-product').addEventListener('click', () => {
+            navigateToSection('productDetail');
+        });
+    }
+    
+    // Create seller banner
+    const sellerBanner = createSellerBanner(sellerName);
+    
+    // Populate seller details (in a real app, this would come from an API)
+    const sellerDetails = getSellerDetails(sellerName);
+    
+    document.getElementById('sellerDetails').innerHTML = `
+        ${sellerBanner}
+        
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-4 mt-4">
+            <div class="flex items-center mb-4">
+                <div class="w-16 h-16 rounded-full bg-primary-light text-primary-color flex items-center justify-center text-2xl font-bold mr-4 border-2 border-white shadow-md">
+                    ${sellerName.charAt(0)}
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold">${sellerName}</h3>
+                    <p class="text-sm text-gray-600">${sellerDetails.category} Specialist</p>
+                    <div class="flex items-center mt-1">
+                        <div class="rating-stars text-sm mr-2">
+                            ${generateStarRating(sellerDetails.rating)}
+                        </div>
+                        <span class="text-sm text-gray-500">(${sellerDetails.reviews} reviews)</span>
+                    </div>
+                </div>
+                <button class="ml-auto bg-primary-color text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors duration-300 flex items-center">
+                    <i class="fas fa-store mr-2"></i> Visit Store
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-3 text-center border border-blue-100">
+                    <div class="text-2xl font-bold text-primary-color">${sellerDetails.positiveRating}%</div>
+                    <div class="text-xs text-gray-600">Positive Rating</div>
+                </div>
+                <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-3 text-center border border-green-100">
+                    <div class="text-2xl font-bold text-primary-color">${formatNumber(sellerDetails.itemsSold)}</div>
+                    <div class="text-xs text-gray-600">Items Sold</div>
+                </div>
+                <div class="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-3 text-center border border-purple-100">
+                    <div class="text-2xl font-bold text-primary-color">${sellerDetails.responseRate}%</div>
+                    <div class="text-xs text-gray-600">Response Rate</div>
+                </div>
+                <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg p-3 text-center border border-yellow-100">
+                    <div class="text-2xl font-bold text-primary-color">${sellerDetails.onTimeDelivery}%</div>
+                    <div class="text-xs text-gray-600">On-Time Delivery</div>
+                </div>
+            </div>
+            
+            <div class="seller-stats flex justify-around border-t border-gray-200 pt-3 text-center">
+                <div>
+                    <div class="text-sm font-medium">Response Time</div>
+                    <div class="text-xs text-gray-600">${sellerDetails.responseTime}</div>
+                </div>
+                <div>
+                    <div class="text-sm font-medium">Joined</div>
+                    <div class="text-xs text-gray-600">${sellerDetails.joinedDate}</div>
+                </div>
+                <div>
+                    <div class="text-sm font-medium">Followership</div>
+                    <div class="text-xs text-gray-600">${formatNumber(sellerDetails.followers)} followers</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
+            <h3 class="text-lg font-semibold mb-3 flex items-center">
+                <i class="fas fa-info-circle text-primary-color mr-2"></i>
+                Seller Description
+            </h3>
+            <p class="text-gray-700 mb-4">${sellerDetails.description}</p>
+            
+            <div class="flex items-center text-sm text-gray-600 mb-2">
+                <i class="fas fa-map-marker-alt mr-2 text-primary-color"></i>
+                <span>${sellerDetails.location}</span>
+            </div>
+            
+            <div class="flex items-center text-sm text-gray-600">
+                <i class="fas fa-shipping-fast mr-2 text-primary-color"></i>
+                <span>${sellerDetails.shippingInfo}</span>
+            </div>
+        </div>
+        
+        <!-- Special Offers Marquee -->
+        <div class="bg-gradient-to-r from-primary-color to-primary-dark text-white p-2 rounded-lg mb-4 overflow-hidden">
+            <div class="flex marquee">
+                <div class="marquee-content flex whitespace-nowrap">
+                    <span class="px-4 flex items-center">
+                        <i class="fas fa-gift mr-2"></i>
+                        Free shipping on orders over Rs. 2000
+                    </span>
+                    <span class="px-4 flex items-center">
+                        <i class="fas fa-tag mr-2"></i>
+                        Today only: Extra 10% off with code SAVE10
+                    </span>
+                    <span class="px-4 flex items-center">
+                        <i class="fas fa-clock mr-2"></i>
+                        Same-day dispatch for orders before 2PM
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-xl shadow-sm p-4">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-semibold">Other Products from ${sellerName}</h3>
+                <button class="text-primary-color text-sm font-medium hover:underline view-all-seller-products flex items-center" 
+                        data-seller="${sellerName}" type="button">
+                    View All <i class="fas fa-chevron-right ml-1 text-xs"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="sellerProductsGrid">
+                <!-- Seller products will be loaded here -->
+            </div>
+        </div>
+    `;
+    
+    // Initialize marquee animation
+    initMarquee();
+    
+    // Load seller's products
+    loadSellerProducts(sellerName);
+    
+    // Navigate to seller profile section
+    navigateToSection('sellerProfile');
+    
+    // Add event listener for "View All" button
+    document.querySelector('.view-all-seller-products').addEventListener('click', function() {
+        showAllSellerProducts(sellerName);
+    });
+    
+    // Add event listener for "Visit Store" button
+    document.querySelector('.bg-primary-color').addEventListener('click', function() {
+        showAllSellerProducts(sellerName);
+    });
+}
+
+// Create seller banner with dynamic content
+function createSellerBanner(sellerName) {
+    const banners = [
+        'bg-gradient-to-r from-blue-500 to-purple-600',
+        'bg-gradient-to-r from-green-500 to-teal-600',
+        'bg-gradient-to-r from-red-500 to-orange-600',
+        'bg-gradient-to-r from-purple-500 to-pink-600',
+        'bg-gradient-to-r from-teal-500 to-blue-600'
+    ];
+    
+    const randomBanner = banners[Math.floor(Math.random() * banners.length)];
+    
+    return `
+        <div class="${randomBanner} text-white rounded-xl p-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 opacity-10 text-9xl">
+                <i class="fas fa-store"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2 relative z-10">${sellerName}</h2>
+            <p class="mb-4 relative z-10">Premium Seller • Trusted by ${formatNumber(getSellerDetails(sellerName).followers)} customers</p>
+            <div class="flex items-center relative z-10">
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm mr-2">
+                    <i class="fas fa-star mr-1"></i> ${getSellerDetails(sellerName).rating} Rating
+                </span>
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+                    <i class="fas fa-check-circle mr-1"></i> Verified Seller
+                </span>
+            </div>
+        </div>
+    `;
+}
+
+// Generate star rating HTML
+function generateStarRating(rating) {
+    let stars = '';
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    
+    for (let i = 0; i < fullStars; i++) {
+        stars += '<i class="fas fa-star text-yellow-400"></i>';
+    }
+    
+    if (hasHalfStar) {
+        stars += '<i class="fas fa-star-half-alt text-yellow-400"></i>';
+    }
+    
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    for (let i = 0; i < emptyStars; i++) {
+        stars += '<i class="far fa-star text-yellow-400"></i>';
+    }
+    
+    return stars;
+}
+
+// Format large numbers with K/M suffixes
+function formatNumber(num) {
+    if (num >= 1000000) {
+        return (num / 1000000).toFixed(1) + 'M';
+    }
+    if (num >= 1000) {
+        return (num / 1000).toFixed(1) + 'K';
+    }
+    return num;
+}
+
+// Initialize marquee animation
+function initMarquee() {
+    const marqueeContent = document.querySelector('.marquee-content');
+    if (marqueeContent) {
+        // Clone content for seamless loop
+        marqueeContent.innerHTML += marqueeContent.innerHTML;
+        
+        // Animate the marquee
+        const marquee = document.querySelector('.marquee');
+        marquee.style.animation = 'marquee 20s linear infinite';
+        
+        // Add CSS for animation if not already added
+        if (!document.getElementById('marquee-style')) {
+            const style = document.createElement('style');
+            style.id = 'marquee-style';
+            style.textContent = `
+                @keyframes marquee {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+                .marquee {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    box-sizing: border-box;
+                }
+                .marquee-content {
+                    display: inline-block;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+}
+
+// Get seller details with enhanced data
+function getSellerDetails(sellerName) {
+    const sellers = {
+        'Tech Gadgets Nepal': {
+            description: 'We provide the latest tech gadgets at affordable prices. All our products come with warranty and excellent customer support. Specializing in smartphones, laptops, and accessories.',
+            location: 'Kathmandu, Nepal',
+            category: 'Electronics',
+            rating: 4.7,
+            reviews: 1280,
+            positiveRating: 98,
+            itemsSold: 23000,
+            responseRate: 99,
+            onTimeDelivery: 97,
+            responseTime: 'Within 1 hour',
+            joinedDate: 'Jan 2022',
+            followers: 12500,
+            shippingInfo: 'Free shipping on orders over Rs. 2000 | Delivery across Nepal'
+        },
+        'Smart Devices Co.': {
+            description: 'Specialized in smart home devices and wearables. Committed to bringing cutting-edge technology to your doorstep with a 2-year warranty on all products.',
+            location: 'Pokhara, Nepal',
+            category: 'Smart Home',
+            rating: 4.5,
+            reviews: 856,
+            positiveRating: 96,
+            itemsSold: 12500,
+            responseRate: 98,
+            onTimeDelivery: 95,
+            responseTime: 'Within 2 hours',
+            joinedDate: 'Mar 2021',
+            followers: 8900,
+            shippingInfo: 'Express shipping available | Free returns within 7 days'
+        },
+        'Audio Nepal': {
+            description: 'Your one-stop shop for all audio equipment. From headphones to speakers, we have the best audio solutions with expert advice and premium brands.',
+            location: 'Lalitpur, Nepal',
+            category: 'Audio',
+            rating: 4.8,
+            reviews: 2105,
+            positiveRating: 99,
+            itemsSold: 18700,
+            responseRate: 97,
+            onTimeDelivery: 98,
+            responseTime: 'Within 3 hours',
+            joinedDate: 'Aug 2020',
+            followers: 15600,
+            shippingInfo: 'Free shipping nationwide | 30-day money-back guarantee'
+        },
+        'Eye Care Nepal': {
+            description: 'Dedicated to protecting your vision with quality eyewear and blue light protection products. All our products are certified and come with prescription services.',
+            location: 'Bhaktapur, Nepal',
+            category: 'Eyewear',
+            rating: 4.6,
+            reviews: 942,
+            positiveRating: 97,
+            itemsSold: 9800,
+            responseRate: 96,
+            onTimeDelivery: 96,
+            responseTime: 'Within 4 hours',
+            joinedDate: 'Nov 2021',
+            followers: 7200,
+            shippingInfo: 'Free eye test with every purchase | Home delivery available'
+        },
+        'Computer Accessories': {
+            description: 'Providing quality computer accessories and peripherals for all your computing needs. We offer bulk discounts for businesses and institutions.',
+            location: 'Kathmandu, Nepal',
+            category: 'Computer',
+            rating: 4.4,
+            reviews: 1256,
+            positiveRating: 95,
+            itemsSold: 15600,
+            responseRate: 95,
+            onTimeDelivery: 94,
+            responseTime: 'Within 5 hours',
+            joinedDate: 'May 2019',
+            followers: 10300,
+            shippingInfo: 'Bulk order discounts | Corporate accounts available'
+        }
+    };
+    
+    return sellers[sellerName] || {
+        description: 'A trusted seller on Nepal Mart providing quality products and excellent service with customer satisfaction guarantee.',
+        location: 'Nepal',
+        category: 'General',
+        rating: 4.3,
+        reviews: 350,
+        positiveRating: 93,
+        itemsSold: 5000,
+        responseRate: 92,
+        onTimeDelivery: 91,
+        responseTime: 'Within 24 hours',
+        joinedDate: '2022',
+        followers: 2500,
+        shippingInfo: 'Standard shipping available | Contact for details'
+    };
+}
+
+// Load seller's products
+function loadSellerProducts(sellerName) {
+    const sellerProducts = allProducts.filter(product => product.seller === sellerName).slice(0, 4);
+    const productsGrid = document.getElementById('sellerProductsGrid');
+    
+    if (sellerProducts.length === 0) {
+        productsGrid.innerHTML = `
+            <div class="col-span-4 text-center py-8 text-gray-500">
+                <i class="fas fa-box-open text-4xl mb-3 text-gray-300"></i>
+                <p>No other products from this seller</p>
+            </div>
+        `;
+        return;
+    }
+    
+    productsGrid.innerHTML = sellerProducts.map(product => `
+        <div class="product-card bg-white rounded-lg shadow-sm p-3 cursor-pointer transition-all duration-300 hover:shadow-md hover:transform hover:scale-105" data-product-id="${product.id}">
+            <div class="relative mb-2">
+                <img src="${product.img}" alt="${product.name}" class="w-full h-32 object-contain">
+                ${product.discount ? `
+                    <span class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                        ${product.discount}% OFF
+                    </span>
+                ` : ''}
+            </div>
+            <h4 class="text-sm font-medium line-clamp-2 mb-1">${product.name}</h4>
+            <div class="flex items-center justify-between">
+                <p class="text-primary-color font-bold">${formatPrice(product.price)}</p>
+                ${product.originalPrice ? `
+                    <p class="text-xs text-gray-500 line-through">${formatPrice(product.originalPrice)}</p>
+                ` : ''}
+            </div>
+            <div class="flex items-center mt-2 text-xs text-gray-500">
+                <i class="fas fa-star text-yellow-400 mr-1"></i>
+                <span>${product.rating || '4.5'}</span>
+                <span class="mx-1">•</span>
+                <span>${product.reviews || '42'} reviews</span>
+            </div>
+        </div>
+    `).join('');
+    
+    // Add click handlers to products
+    productsGrid.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', () => {
+            viewProductDetail(card.dataset.productId);
+        });
+    });
+}
+
+// Show all products from a seller
+function showAllSellerProducts(sellerName) {
+    const sellerProducts = allProducts.filter(product => product.seller === sellerName);
+    
+    if (sellerProducts.length === 0) {
+        showToast('No products found from this seller', 'info');
+        return;
+    }
+    
+    // Create overlay for all seller products
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-white z-50 overflow-y-auto';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', `Products from ${sellerName}`);
+    
+    overlay.innerHTML = `
+        <div class="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center shadow-sm z-20">
+            <button class="back-button mr-3 text-gray-600 hover:text-primary-color transition-colors text-xl p-1 rounded-full hover:bg-gray-100" 
+                    type="button" aria-label="Back to seller profile">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <h1 class="text-xl font-bold flex-1">Products from ${sellerName}</h1>
+            <button class="close-view text-gray-600 hover:text-primary-color transition-colors text-xl p-1 rounded-full hover:bg-gray-100" 
+                    type="button" aria-label="Close view">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="p-4 bg-gray-50 min-h-screen">
+            <div class="mb-4 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 rounded-full bg-primary-light text-primary-color flex items-center justify-center text-lg font-bold mr-3">
+                        ${sellerName.charAt(0)}
+                    </div>
+                    <div>
+                        <h2 class="font-semibold">${sellerName}</h2>
+                        <p class="text-sm text-gray-600">${sellerProducts.length} products</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <div class="relative">
+                        <input type="text" placeholder="Search in store..." class="pl-8 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-color focus:border-transparent">
+                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <button class="bg-white border border-gray-300 rounded-lg p-2 text-gray-600 hover:bg-gray-50">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <button class="bg-white border border-gray-300 rounded-lg p-2 text-gray-600 hover:bg-gray-50">
+                        <i class="fas fa-sort"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="products-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                ${sellerProducts.map(product => `
+                    <div class="product-card bg-white rounded-xl shadow-sm cursor-pointer flex flex-col overflow-hidden hover:shadow-md transition-all duration-300" 
+                         data-product-id="${product.id}" role="button" tabindex="0">
+                        <div class="relative">
+                            <img src="${product.img}" alt="${product.name}" class="w-full h-40 object-contain bg-gray-100 p-4" loading="lazy" />
+                            ${product.discount ? `
+                                <span class="absolute top-2 left-2 bg-primary-color text-white text-xs font-bold px-2 py-1 rounded">
+                                    ${product.discount}% OFF
+                                </span>
+                            ` : ''}
+                            <button class="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md hover:bg-gray-100">
+                                <i class="far fa-heart text-gray-600"></i>
+                            </button>
+                        </div>
+                        <div class="p-3 flex flex-col flex-grow">
+                            <h4 class="text-sm mb-1 line-clamp-2 flex-grow">${product.name}</h4>
+                            <div class="flex items-center mb-2">
+                                <p class="product-price font-bold text-primary-color mr-2">${formatPrice(product.price)}</p>
+                                ${product.originalPrice ? `
+                                    <p class="product-original-price text-xs text-gray-500 line-through">${formatPrice(product.originalPrice)}</p>
+                                ` : ''}
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500">
+                                <div class="rating-stars mr-1">
+                                    ${generateStarRating(product.rating || 4.5)}
+                                </div>
+                                <span>${product.reviews || '42'}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // Add event listeners
+    overlay.querySelector('.back-button').addEventListener('click', () => {
+        overlay.remove();
+    });
+    
+    overlay.querySelector('.close-view').addEventListener('click', () => {
+        overlay.remove();
+    });
+    
+    // Add click handlers to product cards
+    overlay.querySelectorAll('.product-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const productId = card.dataset.productId;
+            overlay.remove();
+            viewProductDetail(productId);
+        });
+    });
+    
+    // Add search functionality specific to this seller's products
+    const searchInput = overlay.querySelector('input');
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const productCards = overlay.querySelectorAll('.product-card');
+        
+        productCards.forEach(card => {
+            const productName = card.querySelector('h4').textContent.toLowerCase();
+            if (productName.includes(searchTerm)) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+}
+
+// Initialize seller profiles when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    enhanceProductDetailSellerInfo();
+    
+    // Add CSS for animations if not already added
+    if (!document.getElementById('seller-profile-animations')) {
+        const style = document.createElement('style');
+        style.id = 'seller-profile-animations';
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            .seller-profile-card {
+                animation: fadeIn 0.5s ease-out forwards;
+            }
+            
+            .seller-stats div {
+                transition: all 0.3s ease;
+            }
+            
+            .seller-stats div:hover {
+                transform: translateY(-3px);
+            }
+            
+            .product-card {
+                transition: all 0.3s ease;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+});
+
+
 
 // View All functionality for different sections
 function setupViewAllFunctionality() {
@@ -1542,13 +2197,13 @@ function setupViewAllFunctionality() {
             
             switch(sectionType) {
                 case 'featured':
-                    showAllProducts('Featured Products', featuredProducts);
+                    showAllProducts('Featured Products', [...featuredProducts]);
                     break;
                 case 'deals':
-                    showAllProducts('Deals of the Day', dealsProducts);
+                    showAllProducts('Deals of the Day', [...dealsProducts]);
                     break;
                 case 'recent':
-                    showAllProducts('Recently Viewed', viewedProducts);
+                    showAllProducts('Recently Viewed', [...viewedProducts]);
                     break;
                 case 'categories':
                     showAllCategories();
@@ -1584,16 +2239,41 @@ function showAllProducts(title, products) {
         
         <div class="p-4">
             <div class="flex justify-between items-center mb-4">
-                <span class="text-sm text-gray-500">${products.length} products</span>
+                <span class="text-sm text-gray-500"><span id="productsCount">${products.length}</span> products</span>
                 <div class="flex items-center space-x-2">
-                    <button class="filter-btn text-primary-color text-sm font-medium hover:underline focus:outline-none flex items-center" 
+                    <button class="filter-btn bg-primary-color text-white text-sm font-medium rounded-md px-3 py-2 hover:bg-red-700 transition-colors flex items-center" 
                             type="button" aria-label="Filter products">
                         <i class="fas fa-filter mr-1"></i> Filter
                     </button>
-                    <button class="sort-btn text-primary-color text-sm font-medium hover:underline focus:outline-none flex items-center" 
-                            type="button" aria-label="Sort products">
-                        <i class="fas fa-sort mr-1"></i> Sort
-                    </button>
+                    <div class="sort-dropdown relative">
+                        <button class="sort-btn bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md px-3 py-2 hover:bg-gray-50 transition-colors flex items-center" 
+                                type="button" aria-label="Sort products" aria-expanded="false" aria-haspopup="true">
+                            <i class="fas fa-sort mr-1"></i> Sort
+                            <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div class="sort-options absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10" role="menu">
+                            <div class="py-1" role="none">
+                                <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="featured" role="menuitem">
+                                    <i class="fas fa-star mr-2 text-yellow-400"></i> Featured
+                                </button>
+                                <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="priceLowHigh" role="menuitem">
+                                    <i class="fas fa-arrow-up mr-2 text-green-500"></i> Price: Low to High
+                                </button>
+                                <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="priceHighLow" role="menuitem">
+                                    <i class="fas fa-arrow-down mr-2 text-red-500"></i> Price: High to Low
+                                </button>
+                                <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="rating" role="menuitem">
+                                    <i class="fas fa-medal mr-2 text-yellow-500"></i> Highest Rated
+                                </button>
+                                <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="newest" role="menuitem">
+                                    <i class="fas fa-clock mr-2 text-blue-500"></i> Newest First
+                                </button>
+                                <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="popular" role="menuitem">
+                                    <i class="fas fa-fire mr-2 text-orange-500"></i> Most Popular
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -1604,6 +2284,9 @@ function showAllProducts(title, products) {
     `;
     
     document.body.appendChild(overlay);
+    
+    // Store original products for filtering
+    overlay.dataset.originalProducts = JSON.stringify(products);
     
     // Add event listeners
     overlay.querySelector('.back-button').addEventListener('click', () => {
@@ -1623,14 +2306,59 @@ function showAllProducts(title, products) {
         });
     });
     
-    // Filter functionality
-    overlay.querySelector('.filter-btn').addEventListener('click', () => {
-        showFilterModal(products, overlay.querySelector('.products-grid'));
+    // Sort dropdown functionality
+    const sortBtn = overlay.querySelector('.sort-btn');
+    const sortOptions = overlay.querySelector('.sort-options');
+    
+    sortBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isExpanded = sortBtn.getAttribute('aria-expanded') === 'true';
+        sortBtn.setAttribute('aria-expanded', !isExpanded);
+        sortOptions.classList.toggle('hidden');
     });
     
-    // Sort functionality
-    overlay.querySelector('.sort-btn').addEventListener('click', () => {
-        showSortOptions(products, overlay.querySelector('.products-grid'));
+    // Close sort dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!sortBtn.contains(e.target) && !sortOptions.contains(e.target)) {
+            sortBtn.setAttribute('aria-expanded', 'false');
+            sortOptions.classList.add('hidden');
+        }
+    });
+    
+    // Sort option selection
+    overlay.querySelectorAll('.sort-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const sortType = option.dataset.sort;
+            const currentProducts = JSON.parse(overlay.dataset.filteredProducts || overlay.dataset.originalProducts);
+            const sortedProducts = sortProducts(currentProducts, sortType);
+            
+            // Update UI
+            renderProductsGrid(overlay.querySelector('.products-grid'), sortedProducts);
+            
+            // Update button text
+            sortBtn.innerHTML = `
+                <i class="fas fa-sort mr-1"></i> ${option.textContent.trim()}
+                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+            `;
+            
+            // Close dropdown
+            sortBtn.setAttribute('aria-expanded', 'false');
+            sortOptions.classList.add('hidden');
+            
+            // Add click handlers to new product cards
+            overlay.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const productId = card.dataset.productId;
+                    overlay.remove();
+                    viewProductDetail(productId);
+                });
+            });
+        });
+    });
+    
+    // Filter functionality
+    overlay.querySelector('.filter-btn').addEventListener('click', () => {
+        showFilterModal(products, overlay);
     });
 }
 
@@ -1709,28 +2437,34 @@ function createProductCard(product) {
 
     let starsHtml = "";
     for (let i = 0; i < fullStars; i++) {
-        starsHtml += '<i class="fas fa-star"></i>';
+        starsHtml += '<i class="fas fa-star text-yellow-400"></i>';
     }
     if (hasHalfStar) {
-        starsHtml += '<i class="fas fa-star-half-alt"></i>';
+        starsHtml += '<i class="fas fa-star-half-alt text-yellow-400"></i>';
     }
     for (let i = 0; i < emptyStars; i++) {
-        starsHtml += '<i class="far fa-star"></i>';
+        starsHtml += '<i class="far fa-star text-yellow-400"></i>';
     }
 
     return `
-        <div class="product-card bg-white rounded-xl shadow-sm cursor-pointer flex flex-col overflow-hidden hover:shadow-md transition-all relative" 
+        <div class="product-card bg-white rounded-xl shadow-sm cursor-pointer flex flex-col overflow-hidden hover:shadow-md transition-all relative group" 
              data-product-id="${product.id}" role="button" tabindex="0" aria-label="View details of ${product.name}">
-            <div class="relative">
-                <img src="${product.img}" alt="${product.name}" class="w-full h-40 object-contain bg-gray-100 p-4" loading="lazy" />
+            <div class="relative overflow-hidden">
+                <img src="${product.img}" alt="${product.name}" class="w-full h-40 object-contain bg-gray-100 p-4 transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                 ${product.discount ? `
                     <span class="absolute top-2 left-2 bg-primary-color text-white text-xs font-bold px-2 py-1 rounded">
                         ${product.discount}% OFF
                     </span>
                 ` : ''}
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
+                    <button class="quick-view-btn bg-white text-primary-color rounded-full w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md" 
+                            aria-label="Quick view ${product.name}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
             </div>
             <div class="p-3 flex flex-col flex-grow">
-                <h4 class="text-sm mb-1 line-clamp-2 flex-grow">${product.name}</h4>
+                <h4 class="text-sm mb-1 line-clamp-2 flex-grow font-medium text-gray-800">${product.name}</h4>
                 <div class="flex items-center mb-1">
                     <div class="rating-stars text-xs mr-1">${starsHtml}</div>
                     <span class="text-xs text-gray-500">(${product.reviews})</span>
@@ -1750,6 +2484,16 @@ function createProductCard(product) {
                         <i class="fas fa-truck mr-1"></i> ${product.delivery}
                     </p>
                 `}
+                <div class="product-actions mt-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-2">
+                    <button class="add-to-cart-btn flex-1 bg-light-color text-dark-color rounded-md text-xs py-2 hover:bg-accent-color hover:text-white transition-colors" 
+                            aria-label="Add ${product.name} to cart">
+                        <i class="fas fa-cart-plus mr-1"></i> Add
+                    </button>
+                    <button class="buy-now-btn flex-1 bg-primary-color text-white rounded-md text-xs py-2 hover:bg-red-700 transition-colors" 
+                            aria-label="Buy ${product.name} now">
+                        Buy Now
+                    </button>
+                </div>
             </div>
         </div>
     `;
@@ -1766,17 +2510,212 @@ function getAllProductsByCategory(category) {
     ].filter(p => p.category === category);
 }
 
-// Filter modal for products
-function showFilterModal(products, container) {
-    // Implementation of filter modal (similar to previous filter implementation)
-    // This would show price range, availability, etc.
-    showToast('Filter functionality would open here', 'info');
+// Sort products based on criteria
+function sortProducts(products, sortType) {
+    const sorted = [...products];
+    
+    switch(sortType) {
+        case 'priceLowHigh':
+            return sorted.sort((a, b) => a.price - b.price);
+        case 'priceHighLow':
+            return sorted.sort((a, b) => b.price - a.price);
+        case 'rating':
+            return sorted.sort((a, b) => b.rating - a.rating);
+        case 'newest':
+            // For demo, sort by ID (newer products have higher IDs)
+            return sorted.sort((a, b) => parseInt(b.id.replace(/\D/g, '')) - parseInt(a.id.replace(/\D/g, '')));
+        case 'popular':
+            return sorted.sort((a, b) => b.reviews - a.reviews);
+        case 'featured':
+        default:
+            return sorted;
+    }
 }
 
-// Sort options for products
-function showSortOptions(products, container) {
-    // Implementation of sort options
-    showToast('Sort options would open here', 'info');
+// Render products grid
+function renderProductsGrid(container, products) {
+    container.innerHTML = products.map(product => createProductCard(product)).join('');
+}
+
+// Filter modal for products
+function showFilterModal(originalProducts, overlay) {
+    // Create filter modal
+    const filterModal = document.createElement('div');
+    filterModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50 pt-10';
+    filterModal.innerHTML = `
+        <div class="bg-white rounded-xl w-11/12 max-w-md animate-scaleIn">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-semibold">Filter Products</h3>
+                <button class="close-filter text-gray-500 hover:text-gray-700 text-2xl font-bold" type="button" aria-label="Close filter">
+                    ×
+                </button>
+            </div>
+            
+            <div class="p-4 max-h-96 overflow-y-auto">
+                <!-- Price Range -->
+                <div class="mb-6">
+                    <h4 class="text-md font-semibold text-gray-800 mb-3">Price Range</h4>
+                    <div class="price-inputs flex justify-between items-center mb-3">
+                        <div class="price-input">
+                            <label class="text-xs text-gray-600 mb-1 block">Min Price</label>
+                            <input type="number" id="minPrice" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="0" min="0">
+                        </div>
+                        <span class="text-gray-400 mx-2">-</span>
+                        <div class="price-input">
+                            <label class="text-xs text-gray-600 mb-1 block">Max Price</label>
+                            <input type="number" id="maxPrice" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="10000" min="0">
+                        </div>
+                    </div>
+                    <div class="price-display text-center">
+                        <span class="text-sm text-primary-color font-medium" id="priceRangeDisplay">Rs. 0 - Rs. 10,000</span>
+                    </div>
+                </div>
+                
+                <!-- Rating -->
+                <div class="mb-6">
+                    <h4 class="text-md font-semibold text-gray-800 mb-3">Minimum Rating</h4>
+                    <div class="rating-filter flex space-x-2">
+                        ${[4, 3, 2, 1].map(rating => `
+                            <button class="rating-option border border-gray-300 rounded-md px-3 py-1 text-sm hover:bg-gray-50 ${rating === 4 ? 'bg-blue-50 border-blue-200' : ''}" 
+                                    data-rating="${rating}" type="button">
+                                ${rating}+ <i class="fas fa-star text-yellow-400 ml-1"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <!-- Availability -->
+                <div class="mb-6">
+                    <h4 class="text-md font-semibold text-gray-800 mb-3">Availability</h4>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="inStockOnly" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                        <span class="ml-3 text-sm text-gray-700">In Stock Only</span>
+                    </label>
+                </div>
+                
+                <!-- Delivery Options -->
+                <div class="mb-6">
+                    <h4 class="text-md font-semibold text-gray-800 mb-3">Delivery Options</h4>
+                    <label class="flex items-center cursor-pointer mb-2">
+                        <input type="checkbox" id="freeDelivery" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                        <span class="ml-3 text-sm text-gray-700">Free Delivery</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="fastDelivery" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                        <span class="ml-3 text-sm text-gray-700">Fast Delivery (Same Day)</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-gray-200 flex justify-between">
+                <button id="resetFilters" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none">
+                    Reset
+                </button>
+                <div class="flex gap-3">
+                    <button id="cancelFilters" class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none">
+                        Cancel
+                    </button>
+                    <button id="applyFilters" class="px-4 py-2 text-sm font-medium text-white bg-primary-color rounded-md hover:bg-red-700 focus:outline-none">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(filterModal);
+    
+    // Close modal
+    filterModal.querySelector('.close-filter').addEventListener('click', () => {
+        filterModal.remove();
+    });
+    
+    filterModal.querySelector('#cancelFilters').addEventListener('click', () => {
+        filterModal.remove();
+    });
+    
+    // Reset filters
+    filterModal.querySelector('#resetFilters').addEventListener('click', () => {
+        filterModal.querySelector('#minPrice').value = '';
+        filterModal.querySelector('#maxPrice').value = '';
+        filterModal.querySelector('#inStockOnly').checked = false;
+        filterModal.querySelector('#freeDelivery').checked = false;
+        filterModal.querySelector('#fastDelivery').checked = false;
+        
+        // Reset rating buttons
+        filterModal.querySelectorAll('.rating-option').forEach(btn => {
+            btn.classList.remove('bg-blue-50', 'border-blue-200');
+        });
+        
+        // Apply default rating filter (4+ stars)
+        filterModal.querySelector('[data-rating="4"]').classList.add('bg-blue-50', 'border-blue-200');
+    });
+    
+    // Rating filter buttons
+    filterModal.querySelectorAll('.rating-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterModal.querySelectorAll('.rating-option').forEach(b => {
+                b.classList.remove('bg-blue-50', 'border-blue-200');
+            });
+            btn.classList.add('bg-blue-50', 'border-blue-200');
+        });
+    });
+    
+    // Apply filters
+    filterModal.querySelector('#applyFilters').addEventListener('click', () => {
+        const minPrice = parseFloat(filterModal.querySelector('#minPrice').value) || 0;
+        const maxPrice = parseFloat(filterModal.querySelector('#maxPrice').value) || 10000;
+        const minRating = parseInt(filterModal.querySelector('.rating-option.bg-blue-50').dataset.rating) || 0;
+        const inStockOnly = filterModal.querySelector('#inStockOnly').checked;
+        const freeDelivery = filterModal.querySelector('#freeDelivery').checked;
+        const fastDelivery = filterModal.querySelector('#fastDelivery').checked;
+        
+        // Filter products
+        const filteredProducts = originalProducts.filter(product => {
+            // Price filter
+            if (product.price < minPrice || product.price > maxPrice) return false;
+            
+            // Rating filter
+            if (Math.floor(product.rating) < minRating) return false;
+            
+            // Stock filter
+            if (inStockOnly && !product.inStock) return false;
+            
+            // Delivery filters
+            if (freeDelivery && !product.delivery.includes('Free')) return false;
+            if (fastDelivery && !product.delivery.includes('Same Day')) return false;
+            
+            return true;
+        });
+        
+        // Update the overlay with filtered products
+        renderProductsGrid(overlay.querySelector('.products-grid'), filteredProducts);
+        overlay.querySelector('#productsCount').textContent = filteredProducts.length;
+        
+        // Store filtered products for further sorting
+        overlay.dataset.filteredProducts = JSON.stringify(filteredProducts);
+        
+        // Add click handlers to new product cards
+        overlay.querySelectorAll('.product-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const productId = card.dataset.productId;
+                overlay.remove();
+                viewProductDetail(productId);
+            });
+        });
+        
+        // Close filter modal
+        filterModal.remove();
+        
+        showToast(`Filters applied: ${filteredProducts.length} products found`, 'success');
+    });
+    
+    // Close modal on outside click
+    filterModal.addEventListener('click', (e) => {
+        if (e.target === filterModal) {
+            filterModal.remove();
+        }
+    });
 }
 
 // Initialize the view all functionality when DOM is loaded
@@ -1813,12 +2752,41 @@ const viewAllStyles = `
         opacity: 1;
     }
 }
+
+.sort-dropdown .sort-options {
+    animation: scaleIn 0.15s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.rating-option.bg-blue-50 {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.quick-view-btn {
+    transform: translateY(10px);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.group:hover .quick-view-btn {
+    transform: translateY(0);
+}
 `;
 
 // Inject styles
 const styleElement = document.createElement('style');
 styleElement.textContent = viewAllStyles;
 document.head.appendChild(styleElement);
+
 
 
 // Filter Modal Functionality
@@ -2664,7 +3632,10 @@ document.addEventListener("DOMContentLoaded", function() {
                   aria-label="Voice search" type="button">
             <i class="fas fa-microphone"></i>
           </button>
-        
+          <button class="image-search p-2 text-gray-400 hover:text-primary-color transition-colors" 
+                  aria-label="Search by image" type="button">
+            <i class="fas fa-camera"></i>
+          </button>
         </div>
       </div>
     `;
@@ -7948,4 +8919,3 @@ function showPhotoModal(photoUrl) {
 </script>
  </body>
 </html>
-
