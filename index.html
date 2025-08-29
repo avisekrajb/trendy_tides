@@ -1556,37 +1556,7 @@
   <script async="" defer="" src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&amp;libraries=places&amp;callback=initMap">
   </script>
   <script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
 
 
 
@@ -3667,7 +3637,10 @@ document.addEventListener("DOMContentLoaded", function() {
                   aria-label="Voice search" type="button">
             <i class="fas fa-microphone"></i>
           </button>
-          
+          <button class="image-search p-2 text-gray-400 hover:text-primary-color transition-colors" 
+                  aria-label="Search by image" type="button">
+            <i class="fas fa-camera"></i>
+          </button>
         </div>
       </div>
     `;
@@ -7626,266 +7599,661 @@ document.querySelectorAll('[id$="Popup"]').forEach(popup => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-// Enhanced Categories Section with Product Filtering
-function enhanceCategoriesSection() {
-  const categoriesContainer = document.querySelector('#categoriesContent .grid');
-  categoriesContainer.innerHTML = '';
-
-  categories.forEach(category => {
-    const categoryCard = document.createElement('div');
-    categoryCard.className = 'category-card bg-white rounded-xl shadow-sm p-4 cursor-pointer hover:shadow-md transition';
-    categoryCard.innerHTML = `
-      <div class="flex items-center mb-3" data-category-id="${category.id}">
-        <div class="w-12 h-12 ${category.color} rounded-full flex items-center justify-center mr-3">
-          <i class="${category.icon} text-xl"></i>
-        </div>
-        <h3 class="text-lg font-semibold">${category.name}</h3>
-      </div>
-      <div class="subcategories flex flex-wrap gap-2">
-        ${category.subcategories.map(sub => `
-          <span class="subcategory bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full hover:bg-primary-light" 
-                data-subcategory="${sub.toLowerCase()}">
-            ${sub}
-          </span>
-        `).join('')}
-      </div>
-      <div class="category-products mt-4 grid grid-cols-2 gap-3 hidden" id="products-${category.id}">
-        <!-- Products will be loaded here when category is clicked -->
-      </div>
-    `;
-
-    // Click handler for main category
-    categoryCard.querySelector('[data-category-id]').addEventListener('click', (e) => {
-      const categoryId = e.currentTarget.dataset.categoryId;
-      const productsContainer = categoryCard.querySelector(`#products-${categoryId}`);
-      
-      // Toggle visibility
-      const isHidden = productsContainer.classList.contains('hidden');
-      document.querySelectorAll('.category-products').forEach(el => el.classList.add('hidden'));
-      
-      if (isHidden) {
-        productsContainer.classList.remove('hidden');
-        loadCategoryProducts(categoryId, productsContainer);
-      }
+// Enhanced Categories Rendering
+function renderCategoriesSlider() {
+    categoriesSlider.innerHTML = "";
+    categories.forEach((category) => {
+        const div = document.createElement("div");
+        div.setAttribute("role", "button");
+        div.setAttribute("tabindex", "0");
+        div.setAttribute("aria-label", `${category.name} category`);
+        div.className = "category-item flex flex-col items-center justify-center min-w-[100px] h-[120px] bg-white rounded-xl shadow-sm cursor-pointer p-3 flex-shrink-0 hover:shadow-lg transition-all transform hover:-translate-y-1 group";
+        div.innerHTML = `
+            <div class="w-16 h-16 ${category.color} rounded-full flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-110">
+                <i class="${category.icon} text-xl"></i>
+            </div>
+            <span class="text-xs font-medium text-center text-gray-800 group-hover:text-primary-color transition-colors">${category.name}</span>
+        `;
+        div.addEventListener("click", () => {
+            navigateToCategory(category.id);
+        });
+        div.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                navigateToCategory(category.id);
+            }
+        });
+        categoriesSlider.appendChild(div);
     });
+}
 
-    // Click handler for subcategories
-    categoryCard.querySelectorAll('.subcategory').forEach(sub => {
-      sub.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const subcategory = e.currentTarget.dataset.subcategory;
-        const categoryId = category.id;
-        const productsContainer = categoryCard.querySelector(`#products-${categoryId}`);
+// Enhanced Category Navigation
+function navigateToCategory(categoryId) {
+    // Find category
+    const category = categories.find((c) => c.id === categoryId);
+    if (!category) return;
+
+    // Show categories section with filtered products
+    navigateToSection("categories");
+
+    // Clear categoriesContent grid and show subcategories and products
+    categoriesContent.innerHTML = `
+        <div class="category-header bg-gradient-to-r from-primary-color to-primary-dark text-white rounded-xl p-6 mb-6 relative overflow-hidden">
+            <div class="absolute top-0 right-0 opacity-10 text-9xl">
+                <i class="${category.icon}"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2 relative z-10">${category.name}</h2>
+            <p class="mb-4 relative z-10">Browse our collection of ${category.subcategories.length} subcategories</p>
+            <div class="flex items-center relative z-10">
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm mr-2">
+                    <i class="fas fa-box mr-1"></i> ${getProductCountByCategory(categoryId)} Products
+                </span>
+                <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+                    <i class="fas fa-star mr-1"></i> Top Rated
+                </span>
+            </div>
+        </div>
         
-        productsContainer.classList.remove('hidden');
-        filterProductsBySubcategory(categoryId, subcategory, productsContainer);
-      });
-    });
-
-    categoriesContainer.appendChild(categoryCard);
-  });
-}
-
-function loadCategoryProducts(categoryId, container) {
-  const products = allProducts.filter(p => p.category === categoryId).slice(0, 4);
-  
-  if (products.length === 0) {
-    container.innerHTML = `
-      <div class="col-span-2 text-center py-4 text-gray-500">
-        No products found in this category
-      </div>
-    `;
-    return;
-  }
-
-  container.innerHTML = products.map(product => `
-    <div class="product-item bg-gray-50 rounded-lg p-2" data-product-id="${product.id}">
-      <img src="${product.img}" alt="${product.name}" class="w-full h-24 object-contain mb-2">
-      <h4 class="text-sm font-medium line-clamp-1">${product.name}</h4>
-      <p class="text-primary-color text-sm font-bold">${formatPrice(product.price)}</p>
-    </div>
-  `).join('');
-
-  // Add click handlers to products
-  container.querySelectorAll('.product-item').forEach(item => {
-    item.addEventListener('click', () => {
-      viewProductDetail(item.dataset.productId);
-    });
-  });
-}
-
-function filterProductsBySubcategory(categoryId, subcategory, container) {
-  const products = allProducts.filter(p => 
-    p.category === categoryId && 
-    (p.name.toLowerCase().includes(subcategory) || 
-     p.features.some(f => f.toLowerCase().includes(subcategory)))
-  ).slice(0, 4);
-
-  container.innerHTML = products.length ? products.map(product => `
-    <div class="product-item bg-gray-50 rounded-lg p-2" data-product-id="${product.id}">
-      <img src="${product.img}" alt="${product.name}" class="w-full h-24 object-contain mb-2">
-      <h4 class="text-sm font-medium line-clamp-1">${product.name}</h4>
-      <p class="text-primary-color text-sm font-bold">${formatPrice(product.price)}</p>
-    </div>
-  `).join('') : `
-    <div class="col-span-2 text-center py-4 text-gray-500">
-      No products found in this subcategory
-    </div>
-  `;
-
-  container.querySelectorAll('.product-item').forEach(item => {
-    item.addEventListener('click', () => {
-      viewProductDetail(item.dataset.productId);
-    });
-  });
-}
-
-
-  // Related products (same category, excluding current)
-  const relatedProducts = allProducts.filter(p => 
-    p.category === product.category && p.id !== product.id
-  ).slice(0, 6);
-
-  productDetailContent.innerHTML = `
-    <div class="product-images mb-4">
-      <div class="main-image bg-gray-100 rounded-lg overflow-hidden mb-2">
-        <img src="${product.img}" alt="${product.name}" class="w-full h-64 object-contain" loading="lazy">
-      </div>
-    </div>
-
-    <div class="product-info mb-6">
-      <h1 class="text-xl font-bold text-dark-color mb-2">${product.name}</h1>
-      <div class="flex items-center mb-3">
-        <div class="rating-stars text-sm mr-2">${starsHtml}</div>
-        <span class="text-sm text-gray-500 mr-3">${product.rating} (${product.reviews} reviews)</span>
-        <span class="text-sm text-success-color">
-          <i class="fas fa-check-circle mr-1"></i> ${product.inStock ? 'In Stock' : 'Out of Stock'}
-        </span>
-      </div>
-
-      <div class="price-section bg-gray-50 p-3 rounded-lg mb-4">
-        ${product.originalPrice ? `
-          <div class="text-xs text-gray-500 line-through mb-1">${formatPrice(product.originalPrice)}</div>
-        ` : ''}
-        <div class="flex items-center">
-          <div class="text-2xl font-bold text-primary-color mr-3">${formatPrice(product.price)}</div>
-          ${product.discount ? `
-            <span class="bg-primary-color text-white text-xs font-bold px-2 py-1 rounded">
-              Save ${product.discount}%
-            </span>
-          ` : ''}
+        <div class="mb-8">
+            <h3 class="text-xl font-bold text-dark-color mb-4 flex items-center">
+                <i class="fas fa-tags mr-2 text-primary-color"></i> Subcategories
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="categorySubcategories"></div>
         </div>
-        ${product.delivery.includes('Free') ? `
-          <div class="text-sm text-success-color mt-2">
-            <i class="fas fa-truck mr-1"></i> ${product.delivery}
-          </div>
-        ` : `
-          <div class="text-sm text-gray-600 mt-2">
-            <i class="fas fa-truck mr-1"></i> ${product.delivery}
-          </div>
-        `}
-      </div>
-
-      <div class="product-actions flex gap-3 mb-6">
-        <button class="add-to-cart flex-1 bg-light-color text-dark-color rounded-lg py-3 text-sm font-medium hover:bg-accent-color hover:text-white transition-colors focus:outline-none">
-          <i class="fas fa-cart-plus mr-2"></i> Add to Cart
-        </button>
-        <button class="buy-now flex-1 bg-primary-color text-white rounded-lg py-3 text-sm font-medium hover:bg-red-700 transition-colors focus:outline-none">
-          Buy Now
-        </button>
-      </div>
-    </div>
-
-    <div class="product-details mb-6">
-      <h2 class="text-lg font-bold text-dark-color mb-3">Product Details</h2>
-      <p class="text-gray-700 mb-4">${product.description}</p>
-
-      <h3 class="text-md font-semibold text-dark-color mb-2">Features</h3>
-      <ul class="features-list space-y-2 mb-4">
-        ${product.features.map(f => `
-          <li class="flex items-start">
-            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
-            <span>${f}</span>
-          </li>
-        `).join('')}
-      </ul>
-    </div>
-
-    <div class="reviews-section">
-      <div class="flex justify-between items-center mb-3">
-        <h2 class="text-lg font-bold text-dark-color">Customer Reviews</h2>
-        <button class="view-all-reviews text-primary-color text-sm font-medium hover:underline focus:outline-none">
-          View All Reviews
-        </button>
-      </div>
-      
-      <div class="review-list space-y-4">
-        ${reviews.slice(0, 2).map(review => `
-          <div class="review bg-gray-50 p-3 rounded-lg">
-            <div class="flex items-center mb-2">
-              <div class="w-10 h-10 rounded-full bg-gray-300 mr-3 overflow-hidden">
-                <img src="${review.photo}" alt="${review.name}" class="w-full h-full object-cover">
-              </div>
-              <div>
-                <div class="text-sm font-medium">${review.name}</div>
-                <div class="rating-stars text-xs">
-                  ${'<i class="fas fa-star"></i>'.repeat(Math.floor(review.rating))}
-                  ${review.rating % 1 >= 0.5 ? '<i class="fas fa-star-half-alt"></i>' : ''}
-                  ${'<i class="far fa-star"></i>'.repeat(5 - Math.ceil(review.rating))}
+        
+        <div class="products-section">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-dark-color flex items-center">
+                    <i class="fas fa-boxes mr-2 text-primary-color"></i> Products
+                </h3>
+                <div class="flex items-center space-x-2">
+                    <button class="filter-btn bg-primary-color text-white text-sm font-medium rounded-md px-3 py-2 hover:bg-red-700 transition-colors flex items-center" 
+                            type="button" aria-label="Filter products">
+                        <i class="fas fa-filter mr-1"></i> Filter
+                    </button>
+                    <div class="sort-dropdown relative">
+                        <button class="sort-btn bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md px-3 py-2 hover:bg-gray-50 transition-colors flex items-center" 
+                                type="button" aria-label="Sort products" aria-expanded="false" aria-haspopup="true">
+                            <i class="fas fa-sort mr-1"></i> Sort
+                            <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div class="sort-options absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10" role="menu">
+                            <div class="py-1" role="none">
+                                <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="featured" role="menuitem">
+                                    <i class="fas fa-star mr-2 text-yellow-400"></i> Featured
+                                </button>
+                                <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="priceLowHigh" role="menuitem">
+                                    <i class="fas fa-arrow-up mr-2 text-green-500"></i> Price: Low to High
+                                </button>
+                                <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="priceHighLow" role="menuitem">
+                                    <i class="fas fa-arrow-down mr-2 text-red-500"></i> Price: High to Low
+                                </button>
+                                <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="rating" role="menuitem">
+                                    <i class="fas fa-medal mr-2 text-yellow-500"></i> Highest Rated
+                                </button>
+                                <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="newest" role="menuitem">
+                                    <i class="fas fa-clock mr-2 text-blue-500"></i> Newest First
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-            <p class="text-sm text-gray-700">${review.text}</p>
-            <div class="text-xs text-gray-500 mt-1">Reviewed on ${review.date}</div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="categoryProductsGrid"></div>
+        </div>
+    `;
 
-    <div class="related-products mt-8">
-      <h3 class="text-lg font-semibold mb-3">Related Products</h3>
-      <div class="related-products-slider flex overflow-x-auto gap-4 pb-4 scroll-smooth" tabindex="0">
-        ${relatedProducts.map(p => `
-          <div class="related-product flex-shrink-0 w-40" data-product-id="${p.id}">
-            <div class="product-card bg-white rounded-xl shadow-sm p-3">
-              <img src="${p.img}" alt="${p.name}" class="w-full h-32 object-contain mb-2">
-              <h4 class="text-sm line-clamp-2">${p.name}</h4>
-              <p class="text-primary-color font-bold text-sm">${formatPrice(p.price)}</p>
+    const subcategoriesContainer = document.getElementById("categorySubcategories");
+    const productsContainer = document.getElementById("categoryProductsGrid");
+
+    // Render subcategories with enhanced UI
+    category.subcategories.forEach((subcat) => {
+        const subcatDiv = document.createElement("div");
+        subcatDiv.className = "subcategory bg-white rounded-xl shadow-sm p-4 flex flex-col items-center justify-center cursor-pointer hover:shadow-md transition-all transform hover:-translate-y-1 group";
+        subcatDiv.innerHTML = `
+            <div class="w-12 h-12 ${category.color} rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <i class="${category.icon} text-lg"></i>
             </div>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
-
-  // Add event listeners
-  productDetailContent.querySelector('.add-to-cart').addEventListener('click', () => {
-    addToCart(product.id);
-  });
-
-  productDetailContent.querySelector('.buy-now').addEventListener('click', () => {
-    buyNow(product.id);
-  });
-
-  productDetailContent.querySelector('.view-all-reviews').addEventListener('click', () => {
-    showAllReviews(product, reviews);
-  });
-
-  productDetailContent.querySelectorAll('.related-product').forEach(item => {
-    item.addEventListener('click', () => {
-      viewProductDetail(item.dataset.productId);
+            <h4 class="text-sm font-medium text-center text-gray-800 group-hover:text-primary-color transition-colors">${subcat}</h4>
+            <p class="text-xs text-gray-500 mt-1">${getProductCountBySubcategory(categoryId, subcat)} products</p>
+        `;
+        subcatDiv.setAttribute("tabindex", "0");
+        subcatDiv.setAttribute("role", "button");
+        subcatDiv.setAttribute("aria-label", `Filter by ${subcat}`);
+        subcatDiv.addEventListener("click", () => {
+            filterCategoryProducts(categoryId, subcat);
+            // Highlight selected subcategory
+            document.querySelectorAll('.subcategory').forEach(el => {
+                el.classList.remove('bg-primary-light', 'text-primary-color', 'border-primary-color');
+            });
+            subcatDiv.classList.add('bg-primary-light', 'text-primary-color', 'border-primary-color');
+            subcatDiv.style.borderWidth = '2px';
+        });
+        subcatDiv.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                subcatDiv.click();
+            }
+        });
+        subcategoriesContainer.appendChild(subcatDiv);
     });
-  });
+
+    // Initially show all products of this category
+    filterCategoryProducts(categoryId, null);
+}
+
+// Get product count by category
+function getProductCountByCategory(categoryId) {
+    const allProds = [
+        ...featuredProducts,
+        ...dealsProducts,
+        ...foodsProducts,
+        ...groceryProducts,
+        ...servicesProducts,
+    ];
+    return allProds.filter(p => p.category === categoryId).length;
+}
+
+// Get product count by subcategory
+function getProductCountBySubcategory(categoryId, subcategory) {
+    const allProds = [
+        ...featuredProducts,
+        ...dealsProducts,
+        ...foodsProducts,
+        ...groceryProducts,
+        ...servicesProducts,
+    ];
+    
+    return allProds.filter(p => {
+        if (p.category === categoryId) {
+            if (!subcategory) return true;
+            // Check if subcategory matches any feature or name
+            return (
+                p.features.some(f => f.toLowerCase().includes(subcategory.toLowerCase())) ||
+                p.name.toLowerCase().includes(subcategory.toLowerCase())
+            );
+        }
+        return false;
+    }).length;
+}
+
+// Enhanced product filtering
+function filterCategoryProducts(categoryId, subcategory) {
+    const productsContainer = document.getElementById("categoryProductsGrid");
+    let filteredProducts = [];
+
+    // Combine all products
+    const allProds = [
+        ...featuredProducts,
+        ...dealsProducts,
+        ...foodsProducts,
+        ...groceryProducts,
+        ...servicesProducts,
+    ];
+
+    filteredProducts = allProds.filter((p) => {
+        if (p.category === categoryId) {
+            if (!subcategory) return true;
+            // Check if subcategory matches any feature or name
+            return (
+                p.features.some(f => f.toLowerCase().includes(subcategory.toLowerCase())) ||
+                p.name.toLowerCase().includes(subcategory.toLowerCase())
+            );
+        }
+        return false;
+    });
+
+    if (filteredProducts.length === 0) {
+        productsContainer.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-search text-3xl text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">No products found</h3>
+                <p class="text-gray-500 mb-4">Try different filters or browse other categories</p>
+                <button class="bg-primary-color text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-red-700 transition-colors" data-section="home">
+                    Browse All Products
+                </button>
+            </div>
+        `;
+        
+        // Add event listener to the button
+        productsContainer.querySelector('button').addEventListener('click', () => {
+            navigateToSection('home');
+        });
+    } else {
+        renderProductsGrid(productsContainer, filteredProducts);
+        
+        // Add sort functionality
+        setupSorting(productsContainer, filteredProducts, categoryId, subcategory);
+        
+        // Add filter functionality
+        setupFiltering(productsContainer, filteredProducts, categoryId, subcategory);
+    }
+}
+
+// Setup sorting functionality
+function setupSorting(container, products, categoryId, subcategory) {
+    const sortBtn = container.parentElement.querySelector('.sort-btn');
+    const sortOptions = container.parentElement.querySelector('.sort-options');
+    
+    sortBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isExpanded = sortBtn.getAttribute('aria-expanded') === 'true';
+        sortBtn.setAttribute('aria-expanded', !isExpanded);
+        sortOptions.classList.toggle('hidden');
+    });
+    
+    // Close sort dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!sortBtn.contains(e.target) && !sortOptions.contains(e.target)) {
+            sortBtn.setAttribute('aria-expanded', 'false');
+            sortOptions.classList.add('hidden');
+        }
+    });
+    
+    // Sort option selection
+    container.parentElement.querySelectorAll('.sort-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const sortType = option.dataset.sort;
+            const sortedProducts = sortProducts([...products], sortType);
+            
+            // Update UI
+            renderProductsGrid(container, sortedProducts);
+            
+            // Update button text
+            sortBtn.innerHTML = `
+                <i class="fas fa-sort mr-1"></i> ${option.textContent.trim()}
+                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+            `;
+            
+            // Close dropdown
+            sortBtn.setAttribute('aria-expanded', 'false');
+            sortOptions.classList.add('hidden');
+        });
+    });
+}
+
+// Setup filtering functionality
+function setupFiltering(container, products, categoryId, subcategory) {
+    const filterBtn = container.parentElement.querySelector('.filter-btn');
+    
+    filterBtn.addEventListener('click', () => {
+        showCategoryFilterModal(products, container, categoryId, subcategory);
+    });
+}
+
+// Show category-specific filter modal
+function showCategoryFilterModal(products, container, categoryId, subcategory) {
+    // Create filter modal
+    const filterModal = document.createElement('div');
+    filterModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-start z-50 pt-10';
+    filterModal.innerHTML = `
+        <div class="bg-white rounded-xl w-11/12 max-w-md animate-scaleIn">
+            <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                <h3 class="text-lg font-semibold">Filter Products</h3>
+                <button class="close-filter text-gray-500 hover:text-gray-700 text-2xl font-bold" type="button" aria-label="Close filter">
+                    ×
+                </button>
+            </div>
+            
+            <div class="p-4 max-h-96 overflow-y-auto">
+                <!-- Price Range -->
+                <div class="mb-6">
+                    <h4 class="text-md font-semibold text-gray-800 mb-3">Price Range</h4>
+                    <div class="price-inputs flex justify-between items-center mb-3">
+                        <div class="price-input">
+                            <label class="text-xs text-gray-600 mb-1 block">Min Price</label>
+                            <input type="number" id="minPrice" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="0" min="0">
+                        </div>
+                        <span class="text-gray-400 mx-2">-</span>
+                        <div class="price-input">
+                            <label class="text-xs text-gray-600 mb-1 block">Max Price</label>
+                            <input type="number" id="maxPrice" class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="10000" min="0">
+                        </div>
+                    </div>
+                    <div class="price-display text-center">
+                        <span class="text-sm text-primary-color font-medium" id="priceRangeDisplay">Rs. 0 - Rs. 10,000</span>
+                    </div>
+                </div>
+                
+                <!-- Rating -->
+                <div class="mb-6">
+                    <h4 class="text-md font-semibold text-gray-800 mb-3">Minimum Rating</h4>
+                    <div class="rating-filter flex space-x-2">
+                        ${[4, 3, 2, 1].map(rating => `
+                            <button class="rating-option border border-gray-300 rounded-md px-3 py-1 text-sm hover:bg-gray-50 ${rating === 4 ? 'bg-blue-50 border-blue-200' : ''}" 
+                                    data-rating="${rating}" type="button">
+                                ${rating}+ <i class="fas fa-star text-yellow-400 ml-1"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <!-- Availability -->
+                <div class="mb-6">
+                    <h4 class="text-md font-semibold text-gray-800 mb-3">Availability</h4>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="inStockOnly" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                        <span class="ml-3 text-sm text-gray-700">In Stock Only</span>
+                    </label>
+                </div>
+                
+                <!-- Delivery Options -->
+                <div class="mb-6">
+                    <h4 class="text-md font-semibold text-gray-800 mb-3">Delivery Options</h4>
+                    <label class="flex items-center cursor-pointer mb-2">
+                        <input type="checkbox" id="freeDelivery" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                        <span class="ml-3 text-sm text-gray-700">Free Delivery</span>
+                    </label>
+                    <label class="flex items-center cursor-pointer">
+                        <input type="checkbox" id="fastDelivery" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                        <span class="ml-3 text-sm text-gray-700">Fast Delivery (Same Day)</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="p-4 border-t border-gray-200 flex justify-between">
+                <button id="resetFilters" class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 focus:outline-none">
+                    Reset
+                </button>
+                <div class="flex gap-3">
+                    <button id="cancelFilters" class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none">
+                        Cancel
+                    </button>
+                    <button id="applyFilters" class="px-4 py-2 text-sm font-medium text-white bg-primary-color rounded-md hover:bg-red-700 focus:outline-none">
+                        Apply Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(filterModal);
+    
+    // Close modal
+    filterModal.querySelector('.close-filter').addEventListener('click', () => {
+        filterModal.remove();
+    });
+    
+    filterModal.querySelector('#cancelFilters').addEventListener('click', () => {
+        filterModal.remove();
+    });
+    
+    // Reset filters
+    filterModal.querySelector('#resetFilters').addEventListener('click', () => {
+        filterModal.querySelector('#minPrice').value = '';
+        filterModal.querySelector('#maxPrice').value = '';
+        filterModal.querySelector('#inStockOnly').checked = false;
+        filterModal.querySelector('#freeDelivery').checked = false;
+        filterModal.querySelector('#fastDelivery').checked = false;
+        
+        // Reset rating buttons
+        filterModal.querySelectorAll('.rating-option').forEach(btn => {
+            btn.classList.remove('bg-blue-50', 'border-blue-200');
+        });
+        
+        // Apply default rating filter (4+ stars)
+        filterModal.querySelector('[data-rating="4"]').classList.add('bg-blue-50', 'border-blue-200');
+    });
+    
+    // Rating filter buttons
+    filterModal.querySelectorAll('.rating-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterModal.querySelectorAll('.rating-option').forEach(b => {
+                b.classList.remove('bg-blue-50', 'border-blue-200');
+            });
+            btn.classList.add('bg-blue-50', 'border-blue-200');
+        });
+    });
+    
+    // Apply filters
+    filterModal.querySelector('#applyFilters').addEventListener('click', () => {
+        const minPrice = parseFloat(filterModal.querySelector('#minPrice').value) || 0;
+        const maxPrice = parseFloat(filterModal.querySelector('#maxPrice').value) || 10000;
+        const minRating = parseInt(filterModal.querySelector('.rating-option.bg-blue-50').dataset.rating) || 0;
+        const inStockOnly = filterModal.querySelector('#inStockOnly').checked;
+        const freeDelivery = filterModal.querySelector('#freeDelivery').checked;
+        const fastDelivery = filterModal.querySelector('#fastDelivery').checked;
+        
+        // Filter products
+        const filteredProducts = products.filter(product => {
+            // Price filter
+            if (product.price < minPrice || product.price > maxPrice) return false;
+            
+            // Rating filter
+            if (Math.floor(product.rating) < minRating) return false;
+            
+            // Stock filter
+            if (inStockOnly && !product.inStock) return false;
+            
+            // Delivery filters
+            if (freeDelivery && !product.delivery.includes('Free')) return false;
+            if (fastDelivery && !product.delivery.includes('Same Day')) return false;
+            
+            return true;
+        });
+        
+        // Update the container with filtered products
+        renderProductsGrid(container, filteredProducts);
+        
+        // Show results count
+        const sectionTitle = container.parentElement.querySelector('h3');
+        if (sectionTitle) {
+            const resultsCount = document.createElement('span');
+            resultsCount.className = 'text-sm font-normal text-gray-500 ml-2';
+            resultsCount.textContent = `(${filteredProducts.length} results)`;
+            
+            // Remove existing count if any
+            const existingCount = sectionTitle.querySelector('.results-count');
+            if (existingCount) {
+                existingCount.remove();
+            }
+            
+            resultsCount.className = 'results-count text-sm font-normal text-gray-500 ml-2';
+            sectionTitle.appendChild(resultsCount);
+        }
+        
+        // Close filter modal
+        filterModal.remove();
+        
+        showToast(`Filters applied: ${filteredProducts.length} products found`, 'success');
+    });
+    
+    // Close modal on outside click
+    filterModal.addEventListener('click', (e) => {
+        if (e.target === filterModal) {
+            filterModal.remove();
+        }
+    });
+}
+
+// Enhanced product card rendering
+function renderProductsGrid(container, products) {
+    container.innerHTML = "";
+
+    if (products.length === 0) {
+        container.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-search text-3xl text-gray-400"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">No products found</h3>
+                <p class="text-gray-500">Try different filters or browse other categories</p>
+            </div>
+        `;
+        return;
+    }
+
+    products.forEach((p) => {
+        const card = document.createElement("article");
+        card.setAttribute("role", "group");
+        card.setAttribute("tabindex", "0");
+        card.className = "product-card bg-white rounded-xl shadow-sm cursor-pointer flex flex-col overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 relative group";
+
+        // Badge for discount
+        const discountBadge = p.discount
+            ? `
+            <span class="absolute top-2 left-2 bg-primary-color text-white text-xs font-bold px-2 py-1 rounded">
+                ${p.discount}% OFF
+            </span>
+            `
+            : "";
+
+        // Rating stars
+        const fullStars = Math.floor(p.rating);
+        const hasHalfStar = p.rating % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+        let starsHtml = "";
+        for (let i = 0; i < fullStars; i++) {
+            starsHtml += '<i class="fas fa-star text-yellow-400"></i>';
+        }
+        if (hasHalfStar) {
+            starsHtml += '<i class="fas fa-star-half-alt text-yellow-400"></i>';
+        }
+        for (let i = 0; i < emptyStars; i++) {
+            starsHtml += '<i class="far fa-star text-yellow-400"></i>';
+        }
+
+        card.innerHTML = `
+            <div class="relative overflow-hidden">
+                <img src="${p.img}" alt="${p.name}" class="product-image w-full h-40 object-contain bg-gray-100 p-4 transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                ${discountBadge}
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300 flex items-center justify-center">
+                    <button class="quick-view-btn bg-white text-primary-color rounded-full w-10 h-10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md" 
+                            aria-label="Quick view ${p.name}">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="product-details p-3 flex flex-col flex-grow">
+                <h4 class="product-name text-sm mb-1 line-clamp-2 flex-grow font-medium text-gray-800">${p.name}</h4>
+                <div class="flex items-center mb-1">
+                    <div class="rating-stars text-xs mr-1">${starsHtml}</div>
+                    <span class="text-xs text-gray-500">(${p.reviews})</span>
+                </div>
+                <div class="flex items-center mb-2">
+                    <p class="product-price font-bold text-primary-color mr-2">${formatPrice(p.price)}</p>
+                    ${p.originalPrice
+                        ? `<p class="product-original-price text-xs text-gray-500 line-through">${formatPrice(p.originalPrice)}</p>`
+                        : ""}
+                </div>
+                ${p.delivery.includes("Free")
+                    ? `<p class="text-xs text-success-color mb-2">
+                        <i class="fas fa-truck mr-1"></i> ${p.delivery}
+                    </p>`
+                    : `<p class="text-xs text-gray-500 mb-2">
+                        <i class="fas fa-truck mr-1"></i> ${p.delivery}
+                    </p>`}
+                <div class="product-actions mt-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex gap-2">
+                    <button class="add-to-cart-btn flex-1 bg-light-color text-dark-color rounded-md text-xs py-2 hover:bg-accent-color hover:text-white transition-colors" 
+                            aria-label="Add ${p.name} to cart">
+                        <i class="fas fa-cart-plus mr-1"></i> Add
+                    </button>
+                    <button class="buy-now-btn flex-1 bg-primary-color text-white rounded-md text-xs py-2 hover:bg-red-700 transition-colors" 
+                            aria-label="Buy ${p.name} now">
+                        Buy Now
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Attach product id for reference
+        card.dataset.productId = p.id;
+
+        // Add click handler to view product details
+        card.addEventListener("click", (e) => {
+            if (!e.target.closest(".add-to-cart-btn") && !e.target.closest(".buy-now-btn") && !e.target.closest(".quick-view-btn")) {
+                viewProductDetail(p.id);
+            }
+        });
+
+        // Add to cart button
+        card.querySelector(".add-to-cart-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            addToCart(p.id);
+        });
+
+        // Buy now button
+        card.querySelector(".buy-now-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            buyNow(p.id);
+        });
+
+        // Quick view button
+        card.querySelector(".quick-view-btn").addEventListener("click", (e) => {
+            e.stopPropagation();
+            viewProductDetail(p.id);
+        });
+
+        container.appendChild(card);
+    });
+}
+
+// Initialize the enhanced categories when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Replace the original renderCategoriesSlider with the enhanced version
+    if (typeof renderCategoriesSlider === 'function') {
+        // Store reference to original function if needed
+        const originalRenderCategoriesSlider = renderCategoriesSlider;
+        
+        // Override with enhanced version
+        window.renderCategoriesSlider = renderCategoriesSlider;
+        
+        // Re-render categories if they were already rendered
+        if (document.getElementById('categoriesSlider').children.length > 0) {
+            renderCategoriesSlider();
+        }
+    }
+    
+    // Add CSS for animations if not already added
+    if (!document.getElementById('enhanced-categories-styles')) {
+        const style = document.createElement('style');
+        style.id = 'enhanced-categories-styles';
+        style.textContent = `
+            .category-item, .subcategory {
+                transition: all 0.3s ease;
+            }
+            
+            .category-item:hover, .subcategory:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+            
+            .product-card {
+                transition: all 0.3s ease;
+            }
+            
+            .product-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            
+            .quick-view-btn {
+                transform: translateY(10px);
+                transition: transform 0.3s ease, opacity 0.3s ease;
+            }
+            
+            .product-card:hover .quick-view-btn {
+                transform: translateY(0);
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            .animate-fadeIn {
+                animation: fadeIn 0.5s ease-out forwards;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+});
+
+
+
 
 function showAllReviews(product, reviews) {
   const modal = document.createElement('div');
@@ -8946,9 +9314,2580 @@ function showPhotoModal(photoUrl) {
 }
 */ 
 
+// Add this script at the end of your existing JavaScript code
 
+// Enhanced Profile Section Functionality
+function enhanceProfileSection() {
+    // Update profile display with enhanced UI
+    function updateProfileDisplay() {
+        if (!isLoggedIn) {
+            profileContent.innerHTML = `
+                <div class="text-center py-12">
+                    <div class="w-24 h-24 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-user-circle text-4xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Welcome to Nepal Mart</h3>
+                    <p class="text-gray-600 mb-6 max-w-md mx-auto">Login to access your profile, track orders, manage addresses, and more</p>
+                    <button class="bg-gradient-to-r from-primary-color to-red-600 text-white rounded-xl px-8 py-3 font-medium hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1" id="loginFromProfile">
+                        <i class="fas fa-sign-in-alt mr-2"></i> Login / Sign Up
+                    </button>
+                </div>
+            `;
 
+            document.getElementById("loginFromProfile").addEventListener("click", () => {
+                loginModal.classList.remove("hidden");
+                loginModal.focus();
+            });
+
+            return;
+        }
+
+        // Enhanced profile UI for logged-in users
+        profileContent.innerHTML = `
+            <header class="profile-header bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-2xl p-6 mb-6 relative overflow-hidden shadow-lg">
+                <div class="absolute top-0 right-0 opacity-10 text-9xl">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="flex items-center relative z-10">
+                    <div class="profile-pic w-20 h-20 rounded-full bg-white bg-opacity-20 backdrop-blur-sm border-2 border-white border-opacity-30 flex items-center justify-center text-3xl font-bold text-white shadow-lg mr-4">
+                        ${user.name.charAt(0)}
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold">${user.name}</h2>
+                        <p class="text-white text-opacity-80">${user.phone}</p>
+                        <div class="flex items-center mt-2">
+                            <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm mr-2">
+                                <i class="fas fa-star mr-1"></i> Member
+                            </span>
+                            <span class="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm">
+                                Joined ${user.joinedOn}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="profile-stats grid grid-cols-2 gap-4 mb-6">
+                <div class="stat-card bg-white rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-2xl font-bold text-primary-color mb-1">${orders.length}</div>
+                    <div class="text-sm text-gray-600">Orders</div>
+                </div>
+                <div class="stat-card bg-white rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-shadow">
+                    <div class="text-2xl font-bold text-primary-color mb-1">${getWishlistCount()}</div>
+                    <div class="text-sm text-gray-600">Wishlist</div>
+                </div>
+            </div>
+
+            <section class="profile-actions bg-white rounded-2xl shadow-sm overflow-hidden mb-6">
+                <div class="action-item border-b border-gray-100 last:border-b-0" data-action="wishlist">
+                    <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center mr-3">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800">My Wishlist</h3>
+                                <p class="text-sm text-gray-500">Your saved items</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="action-item border-b border-gray-100 last:border-b-0" data-action="addresses">
+                    <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800">Saved Addresses</h3>
+                                <p class="text-sm text-gray-500">Manage delivery locations</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="action-item border-b border-gray-100 last:border-b-0" data-action="payments">
+                    <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center mr-3">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800">Payment Methods</h3>
+                                <p class="text-sm text-gray-500">Your cards & wallets</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="action-item border-b border-gray-100 last:border-b-0" data-action="support">
+                    <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center mr-3">
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800">Help & Support</h3>
+                                <p class="text-sm text-gray-500">FAQs, contact & help center</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                </div>
+            </section>
+
+            <section class="profile-actions bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div class="action-item border-b border-gray-100 last:border-b-0" data-action="settings">
+                    <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 text-gray-600 flex items-center justify-center mr-3">
+                                <i class="fas fa-cog"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800">Settings</h3>
+                                <p class="text-sm text-gray-500">App preferences & notifications</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <div class="action-item border-b border-gray-100 last:border-b-0" data-action="logout">
+                    <div class="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mr-3">
+                                <i class="fas fa-sign-out-alt"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-800">Logout</h3>
+                                <p class="text-sm text-gray-500">Sign out of your account</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-gray-400"></i>
+                    </div>
+                </div>
+            </section>
+        `;
+
+        // Add event listeners to action items
+        document.querySelectorAll('.action-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const action = this.dataset.action;
+                handleProfileAction(action);
+            });
+            
+            // Add keyboard accessibility
+            item.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    const action = this.dataset.action;
+                    handleProfileAction(action);
+                }
+            });
+            
+            // Set tabindex for accessibility
+            item.setAttribute('tabindex', '0');
+        });
+    }
+
+    // Handle profile actions
+    function handleProfileAction(action) {
+        switch(action) {
+            case 'wishlist':
+                showWishlist();
+                break;
+            case 'addresses':
+                showSavedAddresses();
+                break;
+            case 'payments':
+                showPaymentMethods();
+                break;
+            case 'support':
+                showHelpSupport();
+                break;
+            case 'settings':
+                showSettings();
+                break;
+            case 'logout':
+                logout();
+                break;
+        }
+    }
+
+    // Get wishlist count from localStorage
+    function getWishlistCount() {
+        if (!user) return 0;
+        const wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.phone}`)) || [];
+        return wishlist.length;
+    }
+
+    // Show wishlist
+    function showWishlist() {
+        if (!user) {
+            showToast("Please login to view your wishlist", "warning");
+            return;
+        }
+        
+        const wishlist = JSON.parse(localStorage.getItem(`wishlist_${user.phone}`)) || [];
+        
+        if (wishlist.length === 0) {
+            showToast("Your wishlist is empty", "info");
+            
+            // Create a modal for empty wishlist
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-2xl w-11/12 max-w-md p-6 text-center animate-scaleIn">
+                    <div class="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-heart text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Your Wishlist is Empty</h3>
+                    <p class="text-gray-600 mb-6">Save your favorite items to see them here</p>
+                    <div class="flex gap-3">
+                        <button class="flex-1 bg-gray-100 text-gray-800 rounded-xl py-3 font-medium hover:bg-gray-200 transition-colors close-wishlist-modal">
+                            Maybe Later
+                        </button>
+                        <button class="flex-1 bg-primary-color text-white rounded-xl py-3 font-medium hover:bg-red-700 transition-colors" data-section="home">
+                            Start Shopping
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Add event listeners
+            modal.querySelector('.close-wishlist-modal').addEventListener('click', () => {
+                modal.remove();
+            });
+            
+            modal.querySelector('[data-section="home"]').addEventListener('click', () => {
+                modal.remove();
+                navigateToSection('home');
+            });
+            
+            // Close modal on outside click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+            
+            return;
+        }
+        
+        // Show wishlist items in a modal
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl w-11/12 max-w-md max-h-[80vh] overflow-hidden flex flex-col animate-scaleIn">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">My Wishlist (${wishlist.length})</h3>
+                    <button class="close-modal text-gray-500 hover:text-gray-700 text-2xl font-bold">
+                        ×
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div class="wishlist-items space-y-3">
+                        ${wishlist.map(item => `
+                            <div class="wishlist-item flex items-center bg-gray-50 rounded-xl p-3" data-product-id="${item.id}">
+                                <img src="${item.img}" alt="${item.name}" class="w-16 h-16 object-contain rounded-lg mr-3">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-sm font-medium truncate">${item.name}</h4>
+                                    <p class="text-primary-color font-bold">${formatPrice(item.price)}</p>
+                                </div>
+                                <button class="remove-from-wishlist text-red-500 hover:text-red-700 ml-2" aria-label="Remove from wishlist">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-200">
+                    <button class="w-full bg-primary-color text-white rounded-xl py-3 font-medium hover:bg-red-700 transition-colors" data-section="home">
+                        Continue Shopping
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add event listeners
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        modal.querySelector('[data-section="home"]').addEventListener('click', () => {
+            modal.remove();
+            navigateToSection('home');
+        });
+        
+        // Remove item from wishlist
+        modal.querySelectorAll('.remove-from-wishlist').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const itemElement = this.closest('.wishlist-item');
+                const productId = itemElement.dataset.productId;
+                
+                // Remove from wishlist
+                const updatedWishlist = wishlist.filter(item => item.id !== productId);
+                localStorage.setItem(`wishlist_${user.phone}`, JSON.stringify(updatedWishlist));
+                
+                // Animate removal
+                itemElement.style.opacity = '0';
+                itemElement.style.transform = 'translateX(-100px)';
+                itemElement.style.transition = 'all 0.3s ease';
+                
+                setTimeout(() => {
+                    itemElement.remove();
+                    
+                    // Update count in header
+                    const header = modal.querySelector('h3');
+                    header.textContent = `My Wishlist (${updatedWishlist.length})`;
+                    
+                    // If no items left, close modal
+                    if (updatedWishlist.length === 0) {
+                        setTimeout(() => {
+                            modal.remove();
+                            showToast("Wishlist is now empty", "info");
+                        }, 300);
+                    }
+                }, 300);
+                
+                showToast("Removed from wishlist", "success");
+            });
+        });
+        
+        // Click on item to view product
+        modal.querySelectorAll('.wishlist-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (!e.target.closest('.remove-from-wishlist')) {
+                    const productId = this.dataset.productId;
+                    modal.remove();
+                    viewProductDetail(productId);
+                }
+            });
+        });
+        
+        // Close modal on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // Show saved addresses
+    function showSavedAddresses() {
+        if (!user) {
+            showToast("Please login to manage addresses", "warning");
+            return;
+        }
+        
+        const addresses = JSON.parse(localStorage.getItem(`addresses_${user.phone}`)) || [];
+        
+        // Create addresses modal
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl w-11/12 max-w-md max-h-[80vh] overflow-hidden flex flex-col animate-scaleIn">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">Saved Addresses</h3>
+                    <button class="close-modal text-gray-500 hover:text-gray-700 text-2xl font-bold">
+                        ×
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    ${addresses.length === 0 ? `
+                        <div class="text-center py-8">
+                            <div class="w-16 h-16 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-gray-800 mb-2">No Saved Addresses</h4>
+                            <p class="text-gray-600">Add your first address to get started</p>
+                        </div>
+                    ` : `
+                        <div class="addresses-list space-y-4">
+                            ${addresses.map((address, index) => `
+                                <div class="address-item bg-gray-50 rounded-xl p-4 ${address.isDefault ? 'border-2 border-primary-color' : ''}" data-index="${index}">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h4 class="font-medium">${address.name || 'My Address'} ${address.isDefault ? '<span class="text-primary-color text-sm">(Default)</span>' : ''}</h4>
+                                        <div class="flex space-x-2">
+                                            <button class="edit-address text-blue-500 hover:text-blue-700 text-sm" aria-label="Edit address">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="delete-address text-red-500 hover:text-red-700 text-sm" aria-label="Delete address">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-700">${address.street}</p>
+                                    <p class="text-sm text-gray-700">${address.city}, ${address.state} - ${address.zipCode}</p>
+                                    <p class="text-sm text-gray-700">${address.phone}</p>
+                                    ${!address.isDefault ? `
+                                        <button class="set-default-address mt-3 text-primary-color text-sm font-medium hover:underline">
+                                            Set as Default
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+                <div class="p-4 border-t border-gray-200">
+                    <button class="w-full bg-primary-color text-white rounded-xl py-3 font-medium hover:bg-red-700 transition-colors flex items-center justify-center" id="addNewAddress">
+                        <i class="fas fa-plus mr-2"></i> Add New Address
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add event listeners
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        modal.querySelector('#addNewAddress').addEventListener('click', () => {
+            modal.remove();
+            showAddEditAddressForm();
+        });
+        
+        // Edit address
+        modal.querySelectorAll('.edit-address').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const addressItem = this.closest('.address-item');
+                const index = addressItem.dataset.index;
+                modal.remove();
+                showAddEditAddressForm(index);
+            });
+        });
+        
+        // Delete address
+        modal.querySelectorAll('.delete-address').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const addressItem = this.closest('.address-item');
+                const index = addressItem.dataset.index;
+                
+                if (confirm("Are you sure you want to delete this address?")) {
+                    addresses.splice(index, 1);
+                    localStorage.setItem(`addresses_${user.phone}`, JSON.stringify(addresses));
+                    
+                    // Animate removal
+                    addressItem.style.opacity = '0';
+                    addressItem.style.height = '0';
+                    addressItem.style.margin = '0';
+                    addressItem.style.padding = '0';
+                    addressItem.style.overflow = 'hidden';
+                    addressItem.style.transition = 'all 0.3s ease';
+                    
+                    setTimeout(() => {
+                        addressItem.remove();
+                        
+                        // If no addresses left, show empty state
+                        if (addresses.length === 0) {
+                            modal.querySelector('.addresses-list').innerHTML = `
+                                <div class="text-center py-8">
+                                    <div class="w-16 h-16 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <h4 class="text-lg font-medium text-gray-800 mb-2">No Saved Addresses</h4>
+                                    <p class="text-gray-600">Add your first address to get started</p>
+                                </div>
+                            `;
+                        }
+                    }, 300);
+                    
+                    showToast("Address deleted", "success");
+                }
+            });
+        });
+        
+        // Set default address
+        modal.querySelectorAll('.set-default-address').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const addressItem = this.closest('.address-item');
+                const index = addressItem.dataset.index;
+                
+                // Update all addresses to remove default status
+                addresses.forEach(addr => {
+                    addr.isDefault = false;
+                });
+                
+                // Set this address as default
+                addresses[index].isDefault = true;
+                localStorage.setItem(`addresses_${user.phone}`, JSON.stringify(addresses));
+                
+                // Update UI
+                modal.querySelectorAll('.address-item').forEach(item => {
+                    item.classList.remove('border-2', 'border-primary-color');
+                });
+                addressItem.classList.add('border-2', 'border-primary-color');
+                
+                // Update the "Set as Default" button visibility
+                modal.querySelectorAll('.set-default-address').forEach(btn => {
+                    btn.style.display = 'block';
+                });
+                this.style.display = 'none';
+                
+                // Update the default indicator text
+                addressItem.querySelector('h4').innerHTML = `${addresses[index].name || 'My Address'} <span class="text-primary-color text-sm">(Default)</span>`;
+                
+                showToast("Default address updated", "success");
+            });
+        });
+        
+        // Close modal on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // Show add/edit address form
+    function showAddEditAddressForm(index = null) {
+        const addresses = JSON.parse(localStorage.getItem(`addresses_${user.phone}`)) || [];
+        const isEdit = index !== null;
+        const address = isEdit ? addresses[index] : null;
+        
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl w-11/12 max-w-md max-h-[80vh] overflow-y-auto animate-scaleIn">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">${isEdit ? 'Edit Address' : 'Add New Address'}</h3>
+                    <button class="close-modal text-gray-500 hover:text-gray-700 text-2xl font-bold">
+                        ×
+                    </button>
+                </div>
+                <div class="p-4">
+                    <form id="addressForm" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Address Name (Optional)</label>
+                            <input type="text" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary-color" 
+                                placeholder="Home, Office, etc." value="${address ? address.name : ''}" id="addressName">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Full Address</label>
+                            <textarea class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary-color" 
+                                rows="3" placeholder="Street address, building, etc." id="streetAddress">${address ? address.street : ''}</textarea>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary-color" 
+                                    value="${address ? address.city : ''}" id="city">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">State/Province</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary-color" 
+                                    value="${address ? address.state : ''}" id="state">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ZIP/Postal Code</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary-color" 
+                                    value="${address ? address.zipCode : ''}" id="zipCode">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <input type="tel" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary-color" 
+                                    value="${address ? address.phone : ''}" id="phone">
+                            </div>
+                        </div>
+                        
+                        ${!isEdit || !address.isDefault ? `
+                            <div class="flex items-center">
+                                <input type="checkbox" id="isDefault" class="h-4 w-4 text-primary-color focus:ring-primary-color" ${address && address.isDefault ? 'checked' : ''}>
+                                <label for="isDefault" class="ml-2 text-sm text-gray-700">Set as default address</label>
+                            </div>
+                        ` : ''}
+                    </form>
+                </div>
+                <div class="p-4 border-t border-gray-200 flex gap-3">
+                    <button class="flex-1 bg-gray-100 text-gray-800 rounded-xl py-3 font-medium hover:bg-gray-200 transition-colors close-modal">
+                        Cancel
+                    </button>
+                    <button class="flex-1 bg-primary-color text-white rounded-xl py-3 font-medium hover:bg-red-700 transition-colors" id="saveAddress">
+                        ${isEdit ? 'Update Address' : 'Save Address'}
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add event listeners
+        const closeModal = () => modal.remove();
+        
+        modal.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', closeModal);
+        });
+        
+        modal.querySelector('#saveAddress').addEventListener('click', () => {
+            const formData = {
+                name: modal.querySelector('#addressName').value,
+                street: modal.querySelector('#streetAddress').value,
+                city: modal.querySelector('#city').value,
+                state: modal.querySelector('#state').value,
+                zipCode: modal.querySelector('#zipCode').value,
+                phone: modal.querySelector('#phone').value,
+                isDefault: modal.querySelector('#isDefault') ? modal.querySelector('#isDefault').checked : false
+            };
+            
+            // Basic validation
+            if (!formData.street || !formData.city || !formData.state || !formData.zipCode || !formData.phone) {
+                showToast("Please fill in all required fields", "error");
+                return;
+            }
+            
+            if (formData.isDefault) {
+                // Remove default status from all other addresses
+                addresses.forEach(addr => {
+                    addr.isDefault = false;
+                });
+            }
+            
+            if (isEdit) {
+                addresses[index] = formData;
+            } else {
+                // If this is the first address, set as default
+                if (addresses.length === 0) {
+                    formData.isDefault = true;
+                }
+                addresses.push(formData);
+            }
+            
+            localStorage.setItem(`addresses_${user.phone}`, JSON.stringify(addresses));
+            showToast(`Address ${isEdit ? 'updated' : 'saved'} successfully`, "success");
+            closeModal();
+        });
+        
+        // Close modal on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Show payment methods
+    function showPaymentMethods() {
+        if (!user) {
+            showToast("Please login to manage payment methods", "warning");
+            return;
+        }
+        
+        const paymentMethods = JSON.parse(localStorage.getItem(`payments_${user.phone}`)) || [];
+        
+        // Create payment methods modal
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl w-11/12 max-w-md max-h-[80vh] overflow-hidden flex flex-col animate-scaleIn">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">Payment Methods</h3>
+                    <button class="close-modal text-gray-500 hover:text-gray-700 text-2xl font-bold">
+                        ×
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    ${paymentMethods.length === 0 ? `
+                        <div class="text-center py-8">
+                            <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-gray-800 mb-2">No Payment Methods</h4>
+                            <p class="text-gray-600">Add your preferred payment method</p>
+                        </div>
+                    ` : `
+                        <div class="payment-methods space-y-4">
+                            ${paymentMethods.map((method, index) => `
+                                <div class="payment-method bg-gray-50 rounded-xl p-4 ${method.isDefault ? 'border-2 border-primary-color' : ''}" data-index="${index}">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center mr-3">
+                                                <i class="${method.type === 'card' ? 'fas fa-credit-card' : method.type === 'esewa' ? 'fas fa-wallet' : 'fas fa-money-bill-wave'} text-${method.type === 'card' ? 'blue' : method.type === 'esewa' ? 'purple' : 'green'}-500"></i>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-medium">${method.type === 'card' ? 'Credit/Debit Card' : method.type === 'esewa' ? 'eSewa Wallet' : 'Cash on Delivery'}</h4>
+                                                ${method.type === 'card' ? `
+                                                    <p class="text-sm text-gray-600">**** **** **** ${method.last4}</p>
+                                                ` : method.type === 'esewa' ? `
+                                                    <p class="text-sm text-gray-600">${method.phone}</p>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                        <div class="flex space-x-2">
+                                            ${!method.isDefault ? `
+                                                <button class="set-default-payment text-primary-color hover:text-red-700 text-sm" aria-label="Set as default">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                            ` : ''}
+                                            <button class="delete-payment text-red-500 hover:text-red-700 text-sm" aria-label="Delete payment method">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    ${method.isDefault ? `<p class="text-sm text-primary-color mt-1"><i class="fas fa-check-circle mr-1"></i> Default payment method</p>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+                <div class="p-4 border-t border-gray-200">
+                    <button class="w-full bg-primary-color text-white rounded-xl py-3 font-medium hover:bg-red-700 transition-colors flex items-center justify-center" id="addPaymentMethod">
+                        <i class="fas fa-plus mr-2"></i> Add Payment Method
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add event listeners
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        modal.querySelector('#addPaymentMethod').addEventListener('click', () => {
+            modal.remove();
+            showAddPaymentMethod();
+        });
+        
+        // Set default payment method
+        modal.querySelectorAll('.set-default-payment').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const paymentItem = this.closest('.payment-method');
+                const index = paymentItem.dataset.index;
+                
+                // Update all payment methods to remove default status
+                paymentMethods.forEach(method => {
+                    method.isDefault = false;
+                });
+                
+                // Set this method as default
+                paymentMethods[index].isDefault = true;
+                localStorage.setItem(`payments_${user.phone}`, JSON.stringify(paymentMethods));
+                
+                // Update UI
+                modal.querySelectorAll('.payment-method').forEach(item => {
+                    item.classList.remove('border-2', 'border-primary-color');
+                });
+                paymentItem.classList.add('border-2', 'border-primary-color');
+                
+                // Update the default indicator
+                paymentItem.querySelector('p')?.remove();
+                paymentItem.insertAdjacentHTML('beforeend', '<p class="text-sm text-primary-color mt-1"><i class="fas fa-check-circle mr-1"></i> Default payment method</p>');
+                
+                showToast("Default payment method updated", "success");
+            });
+        });
+        
+        // Delete payment method
+        modal.querySelectorAll('.delete-payment').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const paymentItem = this.closest('.payment-method');
+                const index = paymentItem.dataset.index;
+                
+                if (confirm("Are you sure you want to delete this payment method?")) {
+                    paymentMethods.splice(index, 1);
+                    localStorage.setItem(`payments_${user.phone}`, JSON.stringify(paymentMethods));
+                    
+                    // Animate removal
+                    paymentItem.style.opacity = '0';
+                    paymentItem.style.height = '0';
+                    paymentItem.style.margin = '0';
+                    paymentItem.style.padding = '0';
+                    paymentItem.style.overflow = 'hidden';
+                    paymentItem.style.transition = 'all 0.3s ease';
+                    
+                    setTimeout(() => {
+                        paymentItem.remove();
+                        
+                        // If no payment methods left, show empty state
+                        if (paymentMethods.length === 0) {
+                            modal.querySelector('.payment-methods').innerHTML = `
+                                <div class="text-center py-8">
+                                    <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-credit-card"></i>
+                                    </div>
+                                    <h4 class="text-lg font-medium text-gray-800 mb-2">No Payment Methods</h4>
+                                    <p class="text-gray-600">Add your preferred payment method</p>
+                                </div>
+                            `;
+                        }
+                    }, 300);
+                    
+                    showToast("Payment method deleted", "success");
+                }
+            });
+        });
+        
+        // Close modal on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // Show add payment method form
+    function showAddPaymentMethod() {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl w-11/12 max-w-md max-h-[80vh] overflow-y-auto animate-scaleIn">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">Add Payment Method</h3>
+                    <button class="close-modal text-gray-500 hover:text-gray-700 text-2xl font-bold">
+                        ×
+                    </button>
+                </div>
+                <div class="p-4">
+                    <div class="payment-options grid grid-cols-3 gap-3 mb-6">
+                        <div class="payment-option border-2 border-gray-200 rounded-xl p-3 text-center cursor-pointer hover:border-primary-color transition-colors" data-type="card">
+                            <div class="w-12 h-12 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <span class="text-sm font-medium">Card</span>
+                        </div>
+                        <div class="payment-option border-2 border-gray-200 rounded-xl p-3 text-center cursor-pointer hover:border-primary-color transition-colors" data-type="esewa">
+                            <div class="w-12 h-12 bg-purple-100 text-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <span class="text-sm font-medium">eSewa</span>
+                        </div>
+                        <div class="payment-option border-2 border-gray-200 rounded-xl p-3 text-center cursor-pointer hover:border-primary-color transition-colors" data-type="cod">
+                            <div class="w-12 h-12 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <span class="text-sm font-medium">COD</span>
+                        </div>
+                    </div>
+                    
+                    <div id="paymentForms" class="space-y-4">
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-arrow-up text-2xl mb-2"></i>
+                            <p>Select a payment method above</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add event listeners
+        const closeModal = () => modal.remove();
+        
+        modal.querySelector('.close-modal').addEventListener('click', closeModal);
+        
+        // Payment option selection
+        modal.querySelectorAll('.payment-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const type = this.dataset.type;
+                
+                // Update selection UI
+                modal.querySelectorAll('.payment-option').forEach(opt => {
+                    opt.classList.remove('border-primary-color', 'bg-blue-50');
+                });
+                this.classList.add('border-primary-color', 'bg-blue-50');
+                
+                // Show appropriate form
+                const formsContainer = modal.querySelector('#paymentForms');
+                
+                if (type === 'card') {
+                    formsContainer.innerHTML = `
+                        <form class="card-form space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary-color" 
+                                    placeholder="1234 5678 9012 3456" maxlength="19">
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+                                    <input type="text" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary-color" 
+                                        placeholder="MM/YY">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                                    <input type="text" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary-color" 
+                                        placeholder="123" maxlength="3">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Cardholder Name</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary-color" 
+                                    placeholder="John Doe">
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="setDefaultCard" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                                <label for="setDefaultCard" class="ml-2 text-sm text-gray-700">Set as default payment method</label>
+                            </div>
+                            
+                            <button type="button" class="w-full bg-primary-color text-white rounded-xl py-3 font-medium hover:bg-red-700 transition-colors save-payment">
+                                Save Card
+                            </button>
+                        </form>
+                    `;
+                } else if (type === 'esewa') {
+                    formsContainer.innerHTML = `
+                        <form class="esewa-form space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">eSewa ID</label>
+                                <input type="text" class="w-full border border-gray-300 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary-color" 
+                                    placeholder="98XXXXXXXX">
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <input type="checkbox" id="setDefaultEsewa" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                                <label for="setDefaultEsewa" class="ml-2 text-sm text-gray-700">Set as default payment method</label>
+                            </div>
+                            
+                            <button type="button" class="w-full bg-primary-color text-white rounded-xl py-3 font-medium hover:bg-red-700 transition-colors save-payment">
+                                Save eSewa
+                            </button>
+                        </form>
+                    `;
+                } else {
+                    formsContainer.innerHTML = `
+                        <div class="cod-info text-center py-4">
+                            <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <h4 class="text-lg font-medium text-gray-800 mb-2">Cash on Delivery</h4>
+                            <p class="text-gray-600 mb-4">Pay when your order is delivered</p>
+                            
+                            <div class="flex items-center justify-center mb-4">
+                                <input type="checkbox" id="setDefaultCOD" class="h-4 w-4 text-primary-color focus:ring-primary-color">
+                                <label for="setDefaultCOD" class="ml-2 text-sm text-gray-700">Set as default payment method</label>
+                            </div>
+                            
+                            <button type="button" class="w-full bg-primary-color text-white rounded-xl py-3 font-medium hover:bg-red-700 transition-colors save-payment">
+                                Set as Payment Option
+                            </button>
+                        </div>
+                    `;
+                }
+                
+                // Add save event listener
+                formsContainer.querySelector('.save-payment').addEventListener('click', function() {
+                    const paymentMethods = JSON.parse(localStorage.getItem(`payments_${user.phone}`)) || [];
+                    const isDefault = formsContainer.querySelector('input[type="checkbox"]').checked;
+                    
+                    if (isDefault) {
+                        // Remove default status from all other payment methods
+                        paymentMethods.forEach(method => {
+                            method.isDefault = false;
+                        });
+                    }
+                    
+                    let newMethod;
+                    
+                    if (type === 'card') {
+                        const cardNumber = formsContainer.querySelector('input[type="text"]').value;
+                        if (!cardNumber || cardNumber.replace(/\s/g, '').length < 16) {
+                            showToast("Please enter a valid card number", "error");
+                            return;
+                        }
+                        
+                        newMethod = {
+                            type: 'card',
+                            last4: cardNumber.slice(-4),
+                            isDefault: isDefault
+                        };
+                    } else if (type === 'esewa') {
+                        const esewaId = formsContainer.querySelector('input[type="text"]').value;
+                        if (!esewaId || esewaId.length < 10) {
+                            showToast("Please enter a valid eSewa ID", "error");
+                            return;
+                        }
+                        
+                        newMethod = {
+                            type: 'esewa',
+                            phone: esewaId,
+                            isDefault: isDefault
+                        };
+                    } else {
+                        newMethod = {
+                            type: 'cod',
+                            isDefault: isDefault
+                        };
+                    }
+                    
+                    paymentMethods.push(newMethod);
+                    localStorage.setItem(`payments_${user.phone}`, JSON.stringify(paymentMethods));
+                    
+                    showToast("Payment method added successfully", "success");
+                    closeModal();
+                });
+            });
+        });
+        
+        // Close modal on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+
+    // Show help and support
+    function showHelpSupport() {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl w-11/12 max-w-md max-h-[80vh] overflow-hidden flex flex-col animate-scaleIn">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">Help & Support</h3>
+                    <button class="close-modal text-gray-500 hover:text-gray-700 text-2xl font-bold">
+                        ×
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div class="support-options space-y-4">
+                        <div class="support-option bg-gray-50 rounded-xl p-4 cursor-pointer hover:bg-gray-100 transition-colors" data-action="faq">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center mr-3">
+                                    <i class="fas fa-question-circle"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">FAQs</h4>
+                                    <p class="text-sm text-gray-600">Frequently asked questions</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="support-option bg-gray-50 rounded-xl p-4 cursor-pointer hover:bg-gray-100 transition-colors" data-action="contact">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-green-100 text-green-500 flex items-center justify-center mr-3">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Contact Us</h4>
+                                    <p class="text-sm text-gray-600">Get in touch with our team</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="support-option bg-gray-50 rounded-xl p-4 cursor-pointer hover:bg-gray-100 transition-colors" data-action="chat">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-500 flex items-center justify-center mr-3">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Live Chat</h4>
+                                    <p class="text-sm text-gray-600">Chat with our support team</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="support-option bg-gray-50 rounded-xl p-4 cursor-pointer hover:bg-gray-100 transition-colors" data-action="email">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-orange-100 text-orange-500 flex items-center justify-center mr-3">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Email Support</h4>
+                                    <p class="text-sm text-gray-600">Send us an email</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <h4 class="font-medium text-gray-800 mb-3">Quick Links</h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <a href="#" class="text-center bg-gray-100 rounded-xl p-3 text-sm hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-box text-primary-color mb-1"></i>
+                                <p>Track Order</p>
+                            </a>
+                            <a href="#" class="text-center bg-gray-100 rounded-xl p-3 text-sm hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-undo text-primary-color mb-1"></i>
+                                <p>Returns</p>
+                            </a>
+                            <a href="#" class="text-center bg-gray-100 rounded-xl p-3 text-sm hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-shipping-fast text-primary-color mb-1"></i>
+                                <p>Shipping Info</p>
+                            </a>
+                            <a href="#" class="text-center bg-gray-100 rounded-xl p-3 text-sm hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-file-alt text-primary-color mb-1"></i>
+                                <p>Terms & Conditions</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-200">
+                    <div class="flex items-center justify-center text-sm text-gray-600">
+                        <i class="fas fa-headset text-primary-color mr-2"></i>
+                        <span>24/7 Support: 9800000000</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add event listeners
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        // Support option clicks
+        modal.querySelectorAll('.support-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const action = this.dataset.action;
+                
+                switch(action) {
+                    case 'faq':
+                        showFAQ();
+                        break;
+                    case 'contact':
+                        showContactOptions();
+                        break;
+                    case 'chat':
+                        startLiveChat();
+                        break;
+                    case 'email':
+                        openEmailSupport();
+                        break;
+                }
+                
+                modal.remove();
+            });
+        });
+        
+        // Close modal on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // Show FAQ
+    function showFAQ() {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl w-11/12 max-w-md max-h-[80vh] overflow-hidden flex flex-col animate-scaleIn">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">Frequently Asked Questions</h3>
+                    <button class="close-modal text-gray-500 hover:text-gray-700 text-2xl font-bold">
+                        ×
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div class="faq-list space-y-4">
+                        <div class="faq-item">
+                            <button class="faq-question w-full text-left font-medium flex justify-between items-center py-2" aria-expanded="false">
+                                <span>How do I place an order?</span>
+                                <i class="fas fa-chevron-down text-sm transition-transform"></i>
+                            </button>
+                            <div class="faq-answer text-sm text-gray-600 overflow-hidden max-h-0 transition-all duration-300">
+                                <div class="py-2">
+                                    <p>To place an order, simply browse our products, add items to your cart, and proceed to checkout. You'll need to provide your delivery address and payment information to complete your order.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <button class="faq-question w-full text-left font-medium flex justify-between items-center py-2" aria-expanded="false">
+                                <span>What payment methods do you accept?</span>
+                                <i class="fas fa-chevron-down text-sm transition-transform"></i>
+                            </button>
+                            <div class="faq-answer text-sm text-gray-600 overflow-hidden max-h-0 transition-all duration-300">
+                                <div class="py-2">
+                                    <p>We accept various payment methods including credit/debit cards, eSewa, Khalti, and cash on delivery (COD) for added convenience.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <button class="faq-question w-full text-left font-medium flex justify-between items-center py-2" aria-expanded="false">
+                                <span>How can I track my order?</span>
+                                <i class="fas fa-chevron-down text-sm transition-transform"></i>
+                            </button>
+                            <div class="faq-answer text-sm text-gray-600 overflow-hidden max-h-0 transition-all duration-300">
+                                <div class="py-2">
+                                    <p>Once your order is shipped, you'll receive a tracking number via SMS and email. You can also track your order from the "My Orders" section in your account.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <button class="faq-question w-full text-left font-medium flex justify-between items-center py-2" aria-expanded="false">
+                                <span>What is your return policy?</span>
+                                <i class="fas fa-chevron-down text-sm transition-transform"></i>
+                            </button>
+                            <div class="faq-answer text-sm text-gray-600 overflow-hidden max-h-0 transition-all duration-300">
+                                <div class="py-2">
+                                    <p>We offer a 7-day return policy for most items. Products must be unused and in their original packaging. Some items like perishables and personal care products may not be eligible for return.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <button class="faq-question w-full text-left font-medium flex justify-between items-center py-2" aria-expanded="false">
+                                <span>Do you deliver to my area?</span>
+                                <i class="fas fa-chevron-down text-sm transition-transform"></i>
+                            </button>
+                            <div class="faq-answer text-sm text-gray-600 overflow-hidden max-h-0 transition-all duration-300">
+                                <div class="py-2">
+                                    <p>We deliver across Nepal. During checkout, enter your location to check if delivery is available in your area. We're continuously expanding our delivery network.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add event listeners
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        // FAQ accordion functionality
+        modal.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', function() {
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                const answer = this.nextElementSibling;
+                const icon = this.querySelector('i');
+                
+                // Close all other FAQs
+                modal.querySelectorAll('.faq-question').forEach(q => {
+                    if (q !== this) {
+                        q.setAttribute('aria-expanded', 'false');
+                        q.nextElementSibling.style.maxHeight = '0';
+                        q.querySelector('i').classList.remove('rotate-180');
+                    }
+                });
+                
+                // Toggle this FAQ
+                if (isExpanded) {
+                    this.setAttribute('aria-expanded', 'false');
+                    answer.style.maxHeight = '0';
+                    icon.classList.remove('rotate-180');
+                } else {
+                    this.setAttribute('aria-expanded', 'true');
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                    icon.classList.add('rotate-180');
+                }
+            });
+        });
+        
+        // Close modal on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // Show contact options
+    function showContactOptions() {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl w-11/12 max-w-md p-6 animate-scaleIn">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">Contact Us</h3>
+                    <p class="text-gray-600">Get in touch with our support team</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <a href="tel:9800000000" class="flex items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                        <div class="w-12 h-12 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium">Call Us</h4>
+                            <p class="text-sm text-gray-600">9800000000</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://wa.me/9779800000000" target="_blank" class="flex items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                        <div class="w-12 h-12 bg-green-100 text-green-500 rounded-full flex items-center justify-center mr-4">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium">WhatsApp</h4>
+                            <p class="text-sm text-gray-600">Message us on WhatsApp</p>
+                        </div>
+                    </a>
+                    
+                    <a href="mailto:support@nepalmart.com" class="flex items-center p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                        <div class="w-12 h-12 bg-red-100 text-red-500 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium">Email</h4>
+                            <p class="text-sm text-gray-600">support@nepalmart.com</p>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="mt-6 text-center">
+                    <button class="bg-gray-100 text-gray-800 rounded-xl px-6 py-2 font-medium hover:bg-gray-200 transition-colors close-modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add event listeners
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        // Close modal on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // Start live chat
+    function startLiveChat() {
+        showToast("Live chat feature coming soon!", "info");
+    }
+
+    // Open email support
+    function openEmailSupport() {
+        window.location.href = "mailto:support@nepalmart.com?subject=Support Request from Nepal Mart";
+    }
+
+    // Show settings
+    function showSettings() {
+        const modal = document.createElement('div');
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-2xl w-11/12 max-w-md max-h-[80vh] overflow-hidden flex flex-col animate-scaleIn">
+                <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">Settings</h3>
+                    <button class="close-modal text-gray-500 hover:text-gray-700 text-2xl font-bold">
+                        ×
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div class="settings-category mb-6">
+                        <h4 class="font-medium text-gray-800 mb-3">Notifications</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Order Updates</p>
+                                    <p class="text-sm text-gray-600">Order confirmations and status updates</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-color"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Promotions</p>
+                                    <p class="text-sm text-gray-600">Special offers and discounts</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-color"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Newsletter</p>
+                                    <p class="text-sm text-gray-600">Product updates and news</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-color"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-category mb-6">
+                        <h4 class="font-medium text-gray-800 mb-3">Preferences</h4>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Dark Mode</p>
+                                    <p class="text-sm text-gray-600">Switch to dark theme</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-color"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Language</p>
+                                    <p class="text-sm text-gray-600">English</p>
+                                </div>
+                                <button class="text-primary-color text-sm font-medium">Change</button>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Currency</p>
+                                    <p class="text-sm text-gray-600">NPR (रू)</p>
+                                </div>
+                                <button class="text-primary-color text-sm font-medium">Change</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-category">
+                        <h4 class="font-medium text-gray-800 mb-3">Privacy & Security</h4>
+                        <div class="space-y-3">
+                            <button class="w-full text-left py-2 flex items-center justify-between">
+                                <span>Privacy Policy</span>
+                                <i class="fas fa-chevron-right text-sm text-gray-400"></i>
+                            </button>
+                            
+                            <button class="w-full text-left py-2 flex items-center justify-between">
+                                <span>Terms of Service</span>
+                                <i class="fas fa-chevron-right text-sm text-gray-400"></i>
+                            </button>
+                            
+                            <button class="w-full text-left py-2 flex items-center justify-between">
+                                <span>Data Settings</span>
+                                <i class="fas fa-chevron-right text-sm text-gray-400"></i>
+                            </button>
+                            
+                            <button class="w-full text-left py-2 flex items-center justify-between">
+                                <span>Clear Cache</span>
+                                <i class="fas fa-chevron-right text-sm text-gray-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-200">
+                    <div class="text-center text-sm text-gray-600">
+                        Nepal Mart App v1.0.0
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Add event listeners
+        modal.querySelector('.close-modal').addEventListener('click', () => {
+            modal.remove();
+        });
+        
+        // Close modal on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // Logout function
+    function logout() {
+        if (confirm("Are you sure you want to logout?")) {
+            isLoggedIn = false;
+            user = null;
+            cart = [];
+            updateUIAfterLogout();
+            showToast("You have been logged out", "info");
+            navigateToSection("home");
+        }
+    }
+
+    // Initialize the enhanced profile section
+    updateProfileDisplay();
+}
+
+// Initialize the enhanced profile section when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Replace the original updateProfileDisplay with the enhanced version
+    if (typeof updateProfileDisplay === 'function') {
+        // Store reference to original function if needed
+        const originalUpdateProfileDisplay = updateProfileDisplay;
+        
+        // Override with enhanced version
+        window.updateProfileDisplay = function() {
+            enhanceProfileSection();
+        };
+        
+        // Re-render profile if it's the current section
+        if (document.getElementById('profileContent')) {
+            enhanceProfileSection();
+        }
+    }
+    
+    // Add CSS for animations if not already added
+    if (!document.getElementById('enhanced-profile-styles')) {
+        const style = document.createElement('style');
+        style.id = 'enhanced-profile-styles';
+        style.textContent = `
+            .profile-header {
+                background: linear-gradient(135deg, #4f46e5, #ec4899);
+            }
+            
+            .stat-card {
+                transition: all 0.3s ease;
+            }
+            
+            .stat-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            }
+            
+            .action-item {
+                transition: all 0.2s ease;
+            }
+            
+            .action-item:active {
+                transform: scale(0.98);
+            }
+            
+            @keyframes scaleIn {
+                from {
+                    opacity: 0;
+                    transform: scale(0.95);
+                }
+                to {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+            
+            .animate-scaleIn {
+                animation: scaleIn 0.2s ease-out forwards;
+            }
+            
+            /* Enhanced scrollbar for modals */
+            .modal-content::-webkit-scrollbar {
+                width: 6px;
+            }
+            
+            .modal-content::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 10px;
+            }
+            
+            .modal-content::-webkit-scrollbar-thumb {
+                background: #e63946;
+                border-radius: 10px;
+            }
+            
+            .modal-content::-webkit-scrollbar-thumb:hover {
+                background: #c1121f;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+});
+
+// Enhanced Checkout, Order Management & Receipt System
+
+// Order data structure
+
+let orderHistory = JSON.parse(localStorage.getItem('nepalMartOrderHistory')) || [];
+let lastOrderTime = 0;
+const ORDER_COOLDOWN = 60000; // 1 minute cooldown between orders
+
+// Proceed to payment button handler
+document.getElementById('proceedToPayBtn').addEventListener('click', function() {
+    if (cart.length === 0) {
+        showToast('Your cart is empty', 'error');
+        return;
+    }
+    
+    if (!currentLocation) {
+        showToast('Please select your delivery location first', 'warning');
+        locationModal.classList.remove('hidden');
+        locationModal.focus();
+        return;
+    }
+    
+    const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked');
+    if (!selectedPayment) {
+        showToast('Please select a payment method', 'warning');
+        return;
+    }
+    
+    // Check order cooldown
+    const currentTime = Date.now();
+    if (currentTime - lastOrderTime < ORDER_COOLDOWN) {
+        const timeLeft = Math.ceil((ORDER_COOLDOWN - (currentTime - lastOrderTime)) / 1000);
+        showToast(`Please wait ${timeLeft} seconds before placing another order`, 'warning');
+        return;
+    }
+    
+    processOrder(selectedPayment.value);
+});
+
+// Process order function
+function processOrder(paymentMethod) {
+    // Show processing animation
+    const proceedBtn = document.getElementById('proceedToPayBtn');
+    const originalText = proceedBtn.textContent;
+    proceedBtn.innerHTML = '<div class="spinner"></div> Processing...';
+    proceedBtn.disabled = true;
+    
+    // Calculate order details
+    const subtotal = cart.reduce((acc, item) => {
+        const product = allProducts.find(p => p.id === item.productId);
+        return acc + (product ? product.price * item.quantity : 0);
+    }, 0);
+    
+    const deliveryCharge = subtotal > 999 ? 0 : 100;
+    const tax = Math.round(subtotal * 0.13);
+    const total = subtotal + deliveryCharge + tax;
+    
+    // Generate order ID
+    const orderId = 'ORD' + Math.floor(10000 + Math.random() * 90000);
+    const orderDate = new Date();
+    const formattedDate = orderDate.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
+    
+    // Get product details for order
+    const orderProducts = cart.map(item => {
+        const product = allProducts.find(p => p.id === item.productId);
+        return {
+            id: product.id,
+            name: product.name,
+            img: product.img,
+            price: product.price,
+            quantity: item.quantity
+        };
+    });
+    
+    // Generate delivery boy phone number (Nepali format)
+    const deliveryBoyPhone = '980' + Math.floor(1000000 + Math.random() * 9000000);
+    
+    // Create order object
+    const newOrder = {
+        id: orderId,
+        date: formattedDate,
+        timestamp: orderDate.getTime(),
+        status: paymentMethod === 'cod' ? 'Pending' : 'Processing',
+        products: orderProducts,
+        subtotal: subtotal,
+        deliveryCharge: deliveryCharge,
+        tax: tax,
+        total: total,
+        paymentMethod: paymentMethod,
+        address: currentLocation,
+        deliveryDate: calculateDeliveryDate(),
+        deliveryBoyPhone: deliveryBoyPhone,
+        estimatedDelivery: generateEstimatedDelivery()
+    };
+    
+    // Simulate payment processing
+    setTimeout(() => {
+        if (paymentMethod === 'cod') {
+            // For COD, order is placed directly
+            completeOrder(newOrder);
+        } else {
+            // For digital payments, show QR code
+            showQRCodeModal(newOrder);
+        }
+    }, 1500);
+}
+
+// Show QR code for digital payments
+function showQRCodeModal(order) {
+    paymentModal.querySelector('.modal-body').innerHTML = `
+        <div class="text-center py-4">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-qrcode text-blue-500 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-700 mb-2">Complete Your Payment</h3>
+            <p class="text-gray-500 mb-4">Scan the QR code to pay with ${order.paymentMethod.toUpperCase()}</p>
+            
+            <div class="bg-white p-4 rounded-lg shadow-md inline-block mb-4">
+                <div class="w-48 h-48 bg-gray-100 flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-qrcode text-6xl text-gray-400"></i>
+                </div>
+                <p class="text-xs text-gray-500 mb-1">Scan to pay</p>
+                <p class="font-bold text-lg">${formatPrice(order.total)}</p>
+            </div>
+            
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-circle text-yellow-500 mt-1 mr-2"></i>
+                    <p class="text-sm text-yellow-700">Please take a screenshot after payment for verification</p>
+                </div>
+            </div>
+            
+            <div class="flex space-x-3">
+                <button id="paymentCompleted" class="flex-1 bg-primary-color text-white rounded-md py-2 text-sm font-medium hover:bg-red-700 transition-colors">
+                    <i class="fas fa-check-circle mr-2"></i> Payment Done
+                </button>
+                <button id="cancelPayment" class="flex-1 bg-gray-200 text-gray-700 rounded-md py-2 text-sm font-medium hover:bg-gray-300 transition-colors">
+                    <i class="fas fa-times mr-2"></i> Cancel
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Payment completed button
+    document.getElementById('paymentCompleted').addEventListener('click', () => {
+        order.status = 'Confirmed';
+        completeOrder(order);
+    });
+    
+    // Cancel payment button
+    document.getElementById('cancelPayment').addEventListener('click', () => {
+        paymentModal.classList.add('hidden');
+        setTimeout(() => {
+            paymentModal.querySelector('.modal-body').innerHTML = document.getElementById('paymentModalContent').innerHTML;
+            document.getElementById('proceedToPayBtn').textContent = 'Proceed to Pay';
+            document.getElementById('proceedToPayBtn').disabled = false;
+        }, 300);
+    });
+}
+
+// Complete order process
+function completeOrder(order) {
+    // Update last order time
+    lastOrderTime = Date.now();
+    
+    // Add to orders
+    orders.unshift(order);
+    
+    // Clear cart
+    cart = [];
+    updateCartDisplay();
+    updateCartBadge();
+    
+    // Save to localStorage
+    localStorage.setItem('nepalMartOrders', JSON.stringify(orders));
+    
+    // Show success message
+    paymentModal.classList.add('hidden');
+    showToast(`Order #${order.id} placed successfully!`, 'success', { orderId: order.id });
+    
+    // Update orders display
+    updateOrdersDisplay();
+    
+    // Reset payment modal for next use
+    setTimeout(() => {
+        paymentModal.querySelector('.modal-body').innerHTML = document.getElementById('paymentModalContent').innerHTML;
+        document.getElementById('proceedToPayBtn').textContent = 'Proceed to Pay';
+        document.getElementById('proceedToPayBtn').disabled = false;
+    }, 300);
+}
+
+// Calculate delivery date (3-7 days from now)
+function calculateDeliveryDate() {
+    const daysToAdd = Math.floor(Math.random() * 5) + 3; // 3-7 days
+    const deliveryDate = new Date();
+    deliveryDate.setDate(deliveryDate.getDate() + daysToAdd);
+    
+    return deliveryDate.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
+}
+
+// Generate estimated delivery text
+function generateEstimatedDelivery() {
+    const options = [
+        "Within 3-5 business days",
+        "Expected delivery in 4-7 days",
+        "Usually delivered in 5-7 days",
+        "Estimated arrival in 3-7 days"
+    ];
+    return options[Math.floor(Math.random() * options.length)];
+}
+
+// Enhanced orders display with sorting
+function updateOrdersDisplay() {
+    if (!isLoggedIn) {
+        ordersContent.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fas fa-clipboard-list text-4xl text-gray-300 mb-3"></i>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">No orders yet</h3>
+                <p class="text-gray-500 mb-4">Login to view your order history</p>
+                <button class="bg-primary-color text-white rounded-md px-6 py-2 font-medium hover:bg-red-700 transition-colors" id="loginFromOrders" type="button">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                </button>
+            </div>
+        `;
+
+        document.getElementById('loginFromOrders').addEventListener('click', () => {
+            loginModal.classList.remove('hidden');
+            loginModal.focus();
+        });
+
+        return;
+    }
+
+    if (orders.length === 0 && orderHistory.length === 0) {
+        ordersContent.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fas fa-clipboard-list text-4xl text-gray-300 mb-3"></i>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">No orders yet</h3>
+                <p class="text-gray-500 mb-4">Start shopping to see your orders here</p>
+                <button class="bg-primary-color text-white rounded-md px-6 py-2 font-medium hover:bg-red-700 transition-colors" data-section="home" type="button">
+                    <i class="fas fa-shopping-bag mr-2"></i> Start Shopping
+                </button>
+            </div>
+        `;
+
+        ordersContent.querySelector('button').addEventListener('click', () => {
+            navigateToSection('home');
+        });
+
+        return;
+    }
+
+    // Combine active orders and order history
+    const allOrders = [...orders, ...orderHistory];
+    
+    ordersContent.innerHTML = `
+        <div class="orders-header flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-dark-color">My Orders</h2>
+            <div class="flex items-center space-x-2">
+                <button id="viewOrderHistory" class="bg-gray-100 text-gray-700 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-200 transition-colors flex items-center">
+                    <i class="fas fa-history mr-1"></i> History
+                </button>
+                <div class="sort-dropdown relative">
+                    <button class="sort-btn bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-md px-3 py-2 hover:bg-gray-50 transition-colors flex items-center w-28 justify-center" 
+                            type="button" aria-label="Sort orders" aria-expanded="false" aria-haspopup="true">
+                        <i class="fas fa-sort mr-1"></i> Sort
+                    </button>
+                    <div class="sort-options absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden z-10" role="menu">
+                        <div class="py-1" role="none">
+                            <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="newest" role="menuitem">
+                                <i class="fas fa-clock mr-2 text-blue-500"></i> Newest First
+                            </button>
+                            <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="oldest" role="menuitem">
+                                <i class="fas fa-clock mr-2 text-blue-500"></i> Oldest First
+                            </button>
+                            <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="priceHigh" role="menuitem">
+                                <i class="fas fa-arrow-down mr-2 text-red-500"></i> Total: High to Low
+                            </button>
+                            <button class="sort-option text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 w-full text-left" data-sort="priceLow" role="menuitem">
+                                <i class="fas fa-arrow-up mr-2 text-green-500"></i> Total: Low to High
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="ordersList" class="space-y-4"></div>
+    `;
+
+    // Render orders
+    renderOrdersList(allOrders);
+
+    // Set up event listeners
+    setupOrdersEventListeners(allOrders);
+}
+
+// Render orders list
+function renderOrdersList(ordersToRender) {
+    const ordersList = document.getElementById('ordersList');
+    ordersList.innerHTML = '';
+
+    if (ordersToRender.length === 0) {
+        ordersList.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fas fa-box-open text-4xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500">No orders found</p>
+            </div>
+        `;
+        return;
+    }
+
+    ordersToRender.forEach((order) => {
+        const orderCard = document.createElement('article');
+        orderCard.className = 'order-card bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow';
+        orderCard.setAttribute('role', 'region');
+        orderCard.setAttribute('tabindex', '0');
+
+        // Status badge color
+        let statusColor = 'bg-yellow-100 text-yellow-800';
+        let statusIcon = 'fas fa-clock';
+        if (order.status === 'Delivered') {
+            statusColor = 'bg-green-100 text-green-800';
+            statusIcon = 'fas fa-check-circle';
+        } else if (order.status === 'Cancelled') {
+            statusColor = 'bg-red-100 text-red-800';
+            statusIcon = 'fas fa-times-circle';
+        } else if (order.status === 'Confirmed' || order.status === 'Shipped') {
+            statusColor = 'bg-blue-100 text-blue-800';
+            statusIcon = 'fas fa-shipping-fast';
+        }
+
+        orderCard.innerHTML = `
+            <header class="order-header flex justify-between border-b border-gray-200 pb-2 mb-3">
+                <div>
+                    <h4 class="font-semibold" id="order${order.id}Label">Order #${order.id}</h4>
+                    <p class="text-xs text-gray-500">Placed on ${order.date}</p>
+                </div>
+                <span class="order-status ${statusColor} rounded-full px-3 py-1 text-xs font-semibold flex items-center">
+                    <i class="${statusIcon} mr-1 text-xs"></i> ${order.status}
+                </span>
+            </header>
+            <div aria-label="Products in order #${order.id}" class="order-products flex gap-3 overflow-x-auto pb-3 mb-3">
+                ${order.products.map((p) => `
+                    <div class="flex-shrink-0 w-20 cursor-pointer group" data-product-id="${p.id}">
+                        <div class="relative">
+                            <img src="${p.img}" alt="${p.name}" class="order-product-img w-full h-20 object-contain rounded-md border border-gray-200 group-hover:border-primary-color transition-colors" loading="lazy" />
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-5 transition-opacity rounded-md"></div>
+                        </div>
+                        <p class="text-xs text-gray-700 truncate mt-1 group-hover:text-primary-color transition-colors">${p.name}</p>
+                        <p class="text-xs text-gray-500">Qty: ${p.quantity}</p>
+                    </div>
+                `).join('')}
+            </div>
+            <footer class="order-footer flex justify-between items-center border-t border-gray-200 pt-2">
+                <div>
+                    <span class="order-total font-bold">Total: ${formatPrice(order.total)}</span>
+                    ${order.deliveryDate ? `
+                        <p class="text-xs text-gray-500 mt-1">
+                            <i class="fas fa-truck mr-1"></i> Expected by ${order.deliveryDate}
+                        </p>
+                    ` : ''}
+                    ${order.status === 'Cancelled' && order.cancellationDate ? `
+                        <p class="text-xs text-red-500 mt-1">
+                            <i class="fas fa-times-circle mr-1"></i> Cancelled on ${order.cancellationDate}
+                        </p>
+                    ` : ''}
+                </div>
+                <div class="order-actions flex gap-2">
+                    <button aria-label="Track order #${order.id}" class="order-btn track bg-light-color text-dark-color border border-light-color rounded-md text-xs py-1 px-3 hover:bg-accent-color hover:text-white transition-colors focus:outline-none" type="button">
+                        <i class="fas fa-map-marker-alt mr-1"></i> Track
+                    </button>
+                    <button aria-label="View receipt for order #${order.id}" class="order-btn receipt bg-white text-primary-color border border-primary-color rounded-md text-xs py-1 px-3 hover:bg-primary-color hover:text-white transition-colors focus:outline-none" type="button">
+                        <i class="fas fa-receipt mr-1"></i> Receipt
+                    </button>
+                    ${order.status === 'Pending' || order.status === 'Confirmed' ? `
+                        <button aria-label="Cancel order #${order.id}" class="order-btn cancel bg-white text-red-600 border border-red-600 rounded-md text-xs py-1 px-3 hover:bg-red-600 hover:text-white transition-colors focus:outline-none" type="button">
+                            <i class="fas fa-times mr-1"></i> Cancel
+                        </button>
+                    ` : ''}
+                </div>
+            </footer>
+        `;
+
+        ordersList.appendChild(orderCard);
+    });
+}
+
+// Set up orders event listeners
+function setupOrdersEventListeners(allOrders) {
+    // Sort dropdown functionality
+    const sortBtn = document.querySelector('.sort-btn');
+    const sortOptions = document.querySelector('.sort-options');
+    
+    sortBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isExpanded = sortBtn.getAttribute('aria-expanded') === 'true';
+        sortBtn.setAttribute('aria-expanded', !isExpanded);
+        sortOptions.classList.toggle('hidden');
+    });
+    
+    // Close sort dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!sortBtn.contains(e.target) && !sortOptions.contains(e.target)) {
+            sortBtn.setAttribute('aria-expanded', 'false');
+            sortOptions.classList.add('hidden');
+        }
+    });
+    
+    // Sort option selection
+    document.querySelectorAll('.sort-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const sortType = option.dataset.sort;
+            const sortedOrders = sortOrders([...allOrders], sortType);
+            
+            // Update UI
+            renderOrdersList(sortedOrders);
+            
+            // Close dropdown
+            sortBtn.setAttribute('aria-expanded', 'false');
+            sortOptions.classList.add('hidden');
+            
+            // Reattach event listeners to the new order cards
+            setTimeout(() => {
+                attachOrderCardEventListeners(sortedOrders);
+            }, 100);
+        });
+    });
+    
+    // View order history button
+    document.getElementById('viewOrderHistory').addEventListener('click', () => {
+        showOrderHistoryModal();
+    });
+    
+    // Attach event listeners to order cards
+    attachOrderCardEventListeners(allOrders);
+}
+
+// Attach event listeners to order cards
+function attachOrderCardEventListeners(ordersList) {
+    // Track order button
+    document.querySelectorAll('.order-btn.track').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const orderId = e.target.closest('.order-card').querySelector('h4').textContent.replace('Order #', '');
+            trackOrder(orderId);
+        });
+    });
+    
+    // View receipt button
+    document.querySelectorAll('.order-btn.receipt').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const orderId = e.target.closest('.order-card').querySelector('h4').textContent.replace('Order #', '');
+            const order = ordersList.find(o => o.id === orderId);
+            if (order) {
+                showReceiptModal(order);
+            }
+        });
+    });
+    
+    // Cancel order button
+    document.querySelectorAll('.order-btn.cancel').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const orderCard = e.target.closest('.order-card');
+            const orderId = orderCard.querySelector('h4').textContent.replace('Order #', '');
+            cancelOrder(orderId, orderCard);
+        });
+    });
+    
+    // Click on product in order
+    document.querySelectorAll('.order-products > div').forEach(item => {
+        item.addEventListener('click', (e) => {
+            const productId = item.dataset.productId;
+            viewProductDetail(productId);
+        });
+    });
+}
+
+// Enhanced track order function
+function trackOrder(orderId) {
+    const order = [...orders, ...orderHistory].find(o => o.id === orderId);
+    if (!order) return;
+
+    const trackingSteps = [
+        { status: "Order Placed", date: order.date, completed: true },
+        {
+            status: "Processing",
+            date: new Date(order.timestamp + 3600000).toLocaleDateString("en-GB"),
+            completed: !["Pending"].includes(order.status),
+        },
+        {
+            status: "Confirmed",
+            date: new Date(order.timestamp + 86400000).toLocaleDateString("en-GB"),
+            completed: ["Confirmed", "Shipped", "Delivered"].includes(order.status),
+        },
+        {
+            status: "Shipped",
+            date: new Date(order.timestamp + 172800000).toLocaleDateString("en-GB"),
+            completed: ["Shipped", "Delivered"].includes(order.status),
+        },
+        { 
+            status: "Delivered", 
+            date: order.deliveryDate, 
+            completed: order.status === "Delivered",
+        },
+    ];
+
+    const trackingHtml = trackingSteps
+        .map(
+            (step, i) => `
+            <div class="flex items-start mb-4">
+                <div class="flex-shrink-0 mr-3">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center ${
+                        step.completed ? "bg-green-500 text-white" : "bg-gray-200 text-gray-600"
+                    }">
+                        <i class="fas fa-${step.completed ? "check" : "clock"}"></i>
+                    </div>
+                    ${
+                        i !== trackingSteps.length - 1
+                            ? `<div class="h-10 w-0.5 mx-auto ${
+                                step.completed ? "bg-green-500" : "bg-gray-200"
+                            }"></div>`
+                            : ""
+                    }
+                </div>
+                <div class="pt-1">
+                    <h4 class="text-sm font-medium ${
+                        step.completed ? "text-gray-900" : "text-gray-500"
+                    }">${step.status}</h4>
+                    <p class="text-xs text-gray-500">${step.date}</p>
+                </div>
+            </div>
+        `
+        )
+        .join("");
+
+    document.getElementById("orderTrackingModalContent").innerHTML = `
+        <div class="mb-4">
+            <h4 class="font-medium text-gray-700 mb-1">Order #${order.id}</h4>
+            <p class="text-sm text-gray-500">Placed on ${order.date}</p>
+        </div>
+
+        <div class="tracking-steps mb-6">
+            ${trackingHtml}
+        </div>
+
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <h4 class="text-sm font-medium text-blue-800 mb-2 flex items-center">
+                <i class="fas fa-truck mr-2"></i> Delivery Information
+            </h4>
+            <p class="text-sm text-blue-700">${order.estimatedDelivery}</p>
+            ${order.deliveryBoyPhone ? `
+                <p class="text-sm text-blue-700 mt-1">
+                    <i class="fas fa-phone-alt mr-1"></i> Delivery Executive: 
+                    <a href="tel:${order.deliveryBoyPhone}" class="font-medium">${order.deliveryBoyPhone}</a>
+                </p>
+            ` : ''}
+        </div>
+
+        <div class="delivery-address bg-gray-50 p-3 rounded-lg mb-4">
+            <h4 class="text-sm font-medium text-gray-700 mb-1">Delivery Address</h4>
+            <p class="text-sm text-gray-600">${order.address}</p>
+        </div>
+
+        <div class="flex justify-between items-center">
+            <span class="font-bold">Total: ${formatPrice(order.total)}</span>
+            <button class="text-primary-color text-sm font-medium hover:underline focus:outline-none flex items-center" type="button" id="contactDelivery">
+                <i class="fas fa-headset mr-1"></i> Support
+            </button>
+        </div>
+    `;
+
+    // Add contact delivery button functionality
+    document.getElementById('contactDelivery').addEventListener('click', () => {
+        const message = `Hello, I need support with my order #${order.id}`;
+        const whatsappUrl = `https://wa.me/9779800000000?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    });
+
+    orderTrackingModal.classList.remove("hidden");
+    orderTrackingModal.focus();
+}
+
+// Show receipt modal with enhanced design
+function showReceiptModal(order) {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+    modal.innerHTML = `
+        <div class="modal-content bg-white rounded-xl w-11/12 max-w-md max-h-[80vh] overflow-y-auto animate-scaleIn">
+            <header class="modal-header bg-gradient-to-r from-primary-color to-primary-dark text-white flex justify-between items-center p-4 sticky top-0">
+                <h3 class="text-lg font-semibold">Order Receipt</h3>
+                <button aria-label="Close receipt" class="close-modal text-white text-2xl font-bold focus:outline-none hover:text-gray-200 transition-colors" type="button">
+                    ×
+                </button>
+            </header>
+            <div class="modal-body p-4">
+                <div class="receipt bg-white border-2 border-dashed border-gray-300 rounded-lg p-6 relative overflow-hidden">
+                    <!-- Nepal Mart Diagonal Background -->
+                    <div class="absolute inset-0 opacity-5 pointer-events-none">
+                        <div class="absolute -left-4 -top-4 -rotate-45 transform origin-center">
+                            <div class="text-6xl font-bold text-primary-color whitespace-nowrap">Nepal Mart</div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mb-6 relative z-10">
+                        <div class="w-20 h-20 bg-gradient-to-r from-primary-color to-primary-dark rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-shopping-bag text-white text-3xl"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold text-primary-color">Nepal Mart</h2>
+                        <p class="text-gray-600">Your Favorite Shopping Destination</p>
+                        <p class="text-xs text-gray-500 mt-1">www.nepalmart.com | support@nepalmart.com</p>
+                    </div>
+                    
+                    <div class="border-t border-b border-gray-200 py-3 mb-4 relative z-10">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-600"><i class="fas fa-receipt mr-2 text-primary-color"></i>Order ID:</span>
+                            <span class="font-medium">${order.id}</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-600"><i class="far fa-calendar-alt mr-2 text-primary-color"></i>Order Date:</span>
+                            <span>${order.date}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600"><i class="fas fa-tag mr-2 text-primary-color"></i>Status:</span>
+                            <span class="font-medium ${order.status === 'Cancelled' ? 'text-red-600' : 'text-green-600'}">${order.status}</span>
+                        </div>
+                        ${order.cancellationDate ? `
+                            <div class="flex justify-between items-center mt-2">
+                                <span class="text-gray-600"><i class="fas fa-times-circle mr-2 text-red-500"></i>Cancelled on:</span>
+                                <span>${order.cancellationDate}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="mb-4 relative z-10">
+                        <h4 class="font-medium text-gray-700 mb-2 flex items-center">
+                            <i class="fas fa-boxes mr-2 text-primary-color"></i> Order Items
+                        </h4>
+                        ${order.products.map(product => `
+                            <div class="flex justify-between items-center mb-2">
+                                <div>
+                                    <p class="text-sm">${product.name} × ${product.quantity}</p>
+                                </div>
+                                <span class="text-sm">${formatPrice(product.price * product.quantity)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-3 mb-4 relative z-10">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-gray-600">Subtotal:</span>
+                            <span>${formatPrice(order.subtotal)}</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-gray-600">Delivery:</span>
+                            <span>${order.deliveryCharge === 0 ? 'FREE' : formatPrice(order.deliveryCharge)}</span>
+                        </div>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-gray-600">Tax (13%):</span>
+                            <span>${formatPrice(order.tax)}</span>
+                        </div>
+                        <div class="flex justify-between items-center font-bold text-lg mt-2 pt-2 border-t border-gray-200">
+                            <span>Total:</span>
+                            <span>${formatPrice(order.total)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4 relative z-10">
+                        <h4 class="font-medium text-gray-700 mb-2 flex items-center">
+                            <i class="fas fa-credit-card mr-2 text-primary-color"></i> Payment Method
+                        </h4>
+                        <p>${order.paymentMethod === 'cod' ? 'Cash on Delivery' : 
+                            order.paymentMethod === 'esewa' ? 'eSewa' : 
+                            order.paymentMethod === 'khalti' ? 'Khalti' : 'Card'}</p>
+                    </div>
+                    
+                    <div class="mb-4 relative z-10">
+                        <h4 class="font-medium text-gray-700 mb-2 flex items-center">
+                            <i class="fas fa-map-marker-alt mr-2 text-primary-color"></i> Delivery Address
+                        </h4>
+                        <p class="text-sm">${order.address}</p>
+                    </div>
+                    
+                    ${order.deliveryDate ? `
+                        <div class="mb-4 relative z-10">
+                            <h4 class="font-medium text-gray-700 mb-2 flex items-center">
+                                <i class="fas fa-truck mr-2 text-primary-color"></i> Expected Delivery
+                            </h4>
+                            <p>${order.deliveryDate}</p>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- User Information -->
+                    ${user ? `
+                        <div class="mb-4 relative z-10">
+                            <h4 class="font-medium text-gray-700 mb-2 flex items-center">
+                                <i class="fas fa-user mr-2 text-primary-color"></i> Customer Information
+                            </h4>
+                            <p class="text-sm">${user.name}</p>
+                            <p class="text-sm">${user.phone}</p>
+                            ${user.email ? `<p class="text-sm">${user.email}</p>` : ''}
+                        </div>
+                    ` : ''}
+                    
+                    <div class="text-center mt-6 pt-4 border-t border-gray-200 relative z-10">
+                        <p class="text-sm text-primary-color font-medium mb-1">Thank you for shopping with Nepal Mart!</p>
+                        <p class="text-xs text-gray-500">We appreciate your business and hope to see you again soon.</p>
+                        <p class="text-xs text-gray-500 mt-2">For any queries, contact us at support@nepalmart.com</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex justify-center space-x-3">
+                    <button id="printReceipt" class="bg-primary-color text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-red-700 transition-colors flex items-center">
+                        <i class="fas fa-print mr-2"></i> Print Receipt
+                    </button>
+                    <button id="shareReceipt" class="bg-green-500 text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-green-600 transition-colors flex items-center">
+                        <i class="fas fa-share-alt mr-2"></i> Share
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal
+    modal.querySelector('.close-modal').addEventListener('click', () => {
+        modal.remove();
+    });
+    
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    // Print receipt button
+    modal.querySelector('#printReceipt').addEventListener('click', () => {
+        const receiptContent = modal.querySelector('.receipt').innerHTML;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Nepal Mart Receipt - Order #${order.id}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9fafb; }
+                    .text-center { text-align: center; }
+                    .font-bold { font-weight: bold; }
+                    .text-primary-color { color: #e63946; }
+                    .text-gray-600 { color: #718096; }
+                    .text-gray-500 { color: #a0aec0; }
+                    .border-t { border-top: 1px solid #e2e8f0; }
+                    .border-b { border-bottom: 1px solid #e2e8f0; }
+                    .mb-2 { margin-bottom: 0.5rem; }
+                    .mb-4 { margin-bottom: 1rem; }
+                    .mt-2 { margin-top: 0.5rem; }
+                    .mt-6 { margin-top: 1.5rem; }
+                    .pt-3 { padding-top: 0.75rem; }
+                    .pt-4 { padding-top: 1rem; }
+                    .receipt { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); max-width: 400px; margin: 0 auto; }
+                </style>
+            </head>
+            <body>
+                <div class="receipt">
+                    ${receiptContent}
+                </div>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() {
+                            window.close();
+                        }, 1000);
+                    };
+                <\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    });
+    
+    // Share receipt button
+    modal.querySelector('#shareReceipt').addEventListener('click', () => {
+        if (navigator.share) {
+            navigator.share({
+                title: `Nepal Mart Receipt - Order #${order.id}`,
+                text: `My Nepal Mart order receipt for order #${order.id}`,
+                url: window.location.href
+            }).catch(() => {
+                showToast('Sharing failed', 'error');
+            });
+        } else {
+            showToast('Web Share API not supported', 'info');
+        }
+    });
+}
+
+// Initialize the enhanced order system
+function initOrderSystem() {
+    // Load orders from localStorage
+    orders = JSON.parse(localStorage.getItem('nepalMartOrders')) || [];
+    orderHistory = JSON.parse(localStorage.getItem('nepalMartOrderHistory')) || [];
+    
+    // Load last order time
+    lastOrderTime = parseInt(localStorage.getItem('nepalMartLastOrderTime')) || 0;
+    
+    // Update orders display
+    updateOrdersDisplay();
+}
+
+// Save last order time to localStorage
+function saveLastOrderTime() {
+    localStorage.setItem('nepalMartLastOrderTime', lastOrderTime.toString());
+}
+
+// Call initOrderSystem when DOM is loaded
+document.addEventListener('DOMContentLoaded', initOrderSystem);
+
+// Save last order time before page unload
+window.addEventListener('beforeunload', saveLastOrderTime);
+
+// Helper function to sort orders
+function sortOrders(orders, sortType) {
+    switch(sortType) {
+        case 'newest':
+            return orders.sort((a, b) => b.timestamp - a.timestamp);
+        case 'oldest':
+            return orders.sort((a, b) => a.timestamp - b.timestamp);
+        case 'priceHigh':
+            return orders.sort((a, b) => b.total - a.total);
+        case 'priceLow':
+            return orders.sort((a, b) => a.total - b.total);
+        default:
+            return orders;
+    }
+}
+
+// Cancel order function
+function cancelOrder(orderId, orderCard) {
+    const order = orders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    // Show confirmation dialog
+    if (confirm(`Are you sure you want to cancel order #${orderId}?`)) {
+        // Update order status
+        order.status = 'Cancelled';
+        order.cancellationDate = new Date().toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        });
+        
+        // Move to order history
+        orderHistory.unshift(order);
+        orders = orders.filter(o => o.id !== orderId);
+        
+        // Update localStorage
+        localStorage.setItem('nepalMartOrders', JSON.stringify(orders));
+        localStorage.setItem('nepalMartOrderHistory', JSON.stringify(orderHistory));
+        
+        // Show success message
+        showToast(`Order #${orderId} has been cancelled`, 'success');
+        
+        // Update UI
+        updateOrdersDisplay();
+    }
+}
+
+// Show order history modal
+function showOrderHistoryModal() {
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50';
+    modal.innerHTML = `
+        <div class="modal-content bg-white rounded-xl w-11/12 max-w-2xl max-h-[80vh] overflow-y-auto animate-scaleIn">
+            <header class="modal-header bg-gradient-to-r from-primary-color to-primary-dark text-white flex justify-between items-center p-4 sticky top-0">
+                <h3 class="text-lg font-semibold">Order History</h3>
+                <button aria-label="Close history" class="close-modal text-white text-2xl font-bold focus:outline-none hover:text-gray-200 transition-colors" type="button">
+                    ×
+                </button>
+            </header>
+            <div class="modal-body p-4">
+                <div class="mb-4">
+                    <h4 class="font-medium text-gray-700 mb-2">Your previous orders</h4>
+                    <p class="text-sm text-gray-500">Showing ${orderHistory.length} completed orders</p>
+                </div>
+                
+                <div class="space-y-4" id="historyOrdersList">
+                    ${orderHistory.length === 0 ? `
+                        <div class="text-center py-8">
+                            <i class="fas fa-history text-4xl text-gray-300 mb-3"></i>
+                            <p class="text-gray-500">No order history found</p>
+                        </div>
+                    ` : orderHistory.map(order => `
+                        <div class="order-card bg-white rounded-xl shadow-sm p-4">
+                            <header class="order-header flex justify-between border-b border-gray-200 pb-2 mb-3">
+                                <div>
+                                    <h4 class="font-semibold">Order #${order.id}</h4>
+                                    <p class="text-xs text-gray-500">Placed on ${order.date}</p>
+                                </div>
+                                <span class="order-status ${order.status === 'Cancelled' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'} rounded-full px-3 py-1 text-xs font-semibold flex items-center">
+                                    <i class="${order.status === 'Cancelled' ? 'fas fa-times-circle' : 'fas fa-check-circle'} mr-1 text-xs"></i> ${order.status}
+                                </span>
+                            </header>
+                            <div class="order-products flex gap-3 overflow-x-auto pb-3 mb-3">
+                                ${order.products.slice(0, 3).map((p) => `
+                                    <div class="flex-shrink-0 w-20">
+                                        <img src="${p.img}" alt="${p.name}" class="w-full h-20 object-contain rounded-md border border-gray-200" loading="lazy" />
+                                        <p class="text-xs text-gray-700 truncate mt-1">${p.name}</p>
+                                    </div>
+                                `).join('')}
+                                ${order.products.length > 3 ? `
+                                    <div class="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-md flex items-center justify-center">
+                                        <span class="text-xs text-gray-500">+${order.products.length - 3} more</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <footer class="order-footer flex justify-between items-center border-t border-gray-200 pt-2">
+                                <div>
+                                    <span class="order-total font-bold">Total: ${formatPrice(order.total)}</span>
+                                    ${order.cancellationDate ? `
+                                        <p class="text-xs text-red-500 mt-1">
+                                            <i class="fas fa-times-circle mr-1"></i> Cancelled on ${order.cancellationDate}
+                                        </p>
+                                    ` : ''}
+                                </div>
+                                <button class="order-btn receipt bg-white text-primary-color border border-primary-color rounded-md text-xs py-1 px-3 hover:bg-primary-color hover:text-white transition-colors" data-order-id="${order.id}">
+                                    <i class="fas fa-receipt mr-1"></i> View Receipt
+                                </button>
+                            </footer>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close modal
+    modal.querySelector('.close-modal').addEventListener('click', () => {
+        modal.remove();
+    });
+    
+    // Close on outside click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+    
+    // View receipt buttons
+    modal.querySelectorAll('.order-btn.receipt').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const orderId = btn.dataset.orderId;
+            const order = orderHistory.find(o => o.id === orderId);
+            if (order) {
+                modal.remove();
+                showReceiptModal(order);
+            }
+        });
+    });
+}
 </script>
  </body>
 </html>
-
