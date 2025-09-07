@@ -5110,7 +5110,6 @@ updateLanguage = function(lang) {
 
 
 
-
 // Weather Modal Functionality
 const WEATHER_API_KEY = '0c645dbda21949e1adb43014250709';
 let userLocation = null;
@@ -5125,6 +5124,75 @@ function initWeatherModal() {
     if (weatherWidget) {
         weatherWidget.addEventListener('click', showWeatherModal);
     }
+    
+    // Auto-detect location if no stored location or if older than 5 hours
+    const cachedLocation = localStorage.getItem('userLocation');
+    const cachedLocationTime = localStorage.getItem('userLocationTime');
+    
+    if (cachedLocation) {
+        userLocation = JSON.parse(cachedLocation);
+        
+        // Check if location is older than 5 hours (18000000 ms)
+        const currentTime = new Date().getTime();
+        if (currentTime - parseInt(cachedLocationTime) > 18000000) {
+            // Location is older than 5 hours, detect fresh location
+            autoDetectLocation();
+        } else {
+            // Use cached location
+            updateWeatherData();
+            updateMiniWeather();
+        }
+    } else {
+        // No cached location, detect fresh location
+        autoDetectLocation();
+    }
+}
+
+// Auto-detect location without user interaction
+function autoDetectLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                // Success callback
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                
+                // Get location details using reverse geocoding
+                getLocationDetails(lat, lon);
+            },
+            function(error) {
+                // Error callback - use default location (Larikatta)
+                console.error('Auto location detection failed:', error);
+                useDefaultLocation();
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 8000,
+                maximumAge: 300000 // 5 minutes
+            }
+        );
+    } else {
+        // Geolocation not supported, use default location
+        useDefaultLocation();
+    }
+}
+
+// Use default location (Larikatta)
+function useDefaultLocation() {
+    userLocation = {
+        name: 'Larikatta',
+        region: 'Bagmati Pradesh',
+        country: 'Nepal',
+        lat: 27.7172,
+        lon: 85.3240
+    };
+    
+    // Save to storage
+    saveLocationToStorage(userLocation);
+    
+    // Update weather data
+    updateWeatherData();
+    updateMiniWeather();
 }
 
 // Create weather modal
@@ -5630,6 +5698,9 @@ async function getLocationDetails(lat, lon) {
             lon: weatherData.location.lon
         };
         
+        // Save to storage
+        saveLocationToStorage(userLocation);
+        
         // Update weather data for this location
         updateWeatherData();
     } catch (error) {
@@ -5667,22 +5738,24 @@ function updateMiniWeather(weatherData) {
     weatherIcon.className = iconClass;
 }
 
+// Save location to localStorage
+function saveLocationToStorage(location) {
+    localStorage.setItem('userLocation', JSON.stringify(location));
+    localStorage.setItem('userLocationTime', new Date().getTime().toString());
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     initWeatherModal();
     
-    // Try to get cached location if available
-    const cachedLocation = localStorage.getItem('userLocation');
-    if (cachedLocation) {
-        userLocation = JSON.parse(cachedLocation);
-        updateWeatherData();
-    }
+    // Update weather every 30 minutes
+    setInterval(() => {
+        if (userLocation) {
+            updateWeatherData();
+        }
+    }, 1800000); // 30 minutes
 });
 
-// Save location to localStorage when detected
-function saveLocationToStorage(location) {
-    localStorage.setItem('userLocation', JSON.stringify(location));
-}
 
 // Enhanced Events Section
 function enhanceEventsSection() {
@@ -8211,6 +8284,8 @@ function enhanceEventsSection() {
 
     document.head.insertAdjacentHTML('beforeend', eventsCSS);
 
+
+
     // Function to create an event card
     function createEventCard(event) {
         const eventDate = new Date(event.date);
@@ -9106,6 +9181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         enhanceEventsSection();
     }
 });
+
 
 
 
